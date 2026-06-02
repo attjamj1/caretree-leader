@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Race Admin — Amazing Race</title>
+  <link rel="stylesheet" href="../static/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+</head>
+<body>
+
+<!-- ─── Topbar ─────────────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="topbar-logo">race <span>&</span> run!</div>
+  <div class="topbar-right">
+    <span id="race-badge" class="badge badge-draft" style="display:none"></span>
+    <button class="btn btn-green btn-sm" id="start-btn" style="display:none" onclick="toggleRace()">
+      <i class="ti ti-player-play"></i> <span id="start-label">Start race</span>
+    </button>
+    <button class="btn btn-sm" id="live-btn" style="display:none" onclick="openLive()">
+      <i class="ti ti-external-link"></i> Live view
+    </button>
+  </div>
+</header>
+
+<div class="shell">
+
+<!-- ─── Sidebar ───────────────────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-section">Projects</div>
+  <div id="proj-list"></div>
+  <button class="new-proj-btn" onclick="openModal('modal-newproj')">
+    <i class="ti ti-plus"></i> New project
+  </button>
+</aside>
+
+<!-- ─── Main ──────────────────────────────────────────────────────────────── -->
+<main class="main">
+  <div class="main-header">
+    <div>
+      <div class="main-title" id="main-title">Select a project</div>
+      <div class="main-sub" id="main-sub">—</div>
+    </div>
+  </div>
+
+  <div class="content" id="main-content">
+    <div class="empty-state">
+      <div class="empty-state-icon">🏁</div>
+      <div class="empty-state-text">Select or create a project to get started</div>
+    </div>
+  </div>
+</main>
+
+</div>
+
+<!-- ─── New Project Modal ──────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-newproj">
+  <div class="modal">
+    <div class="modal-title">✨ New race project</div>
+    <div class="form-group">
+      <label class="form-label">Project name</label>
+      <input type="text" id="np-name" placeholder="e.g. Harbour Chronicles Season 2">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Organisation</label>
+      <input type="text" id="np-org" placeholder="e.g. PSA Singapore">
+    </div>
+    <div class="grid2">
+      <div class="form-group">
+        <label class="form-label">Event date</label>
+        <input type="text" id="np-date" placeholder="e.g. 15 Jul 2025">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Number of teams</label>
+        <input type="number" id="np-teams" value="4" min="1" max="20">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="createProject()">Create project</button>
+      <button class="btn" onclick="closeModal('modal-newproj')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Add/Edit Station Modal ────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-station">
+  <div class="modal">
+    <div class="modal-title" id="station-modal-title">Add station</div>
+    <div class="grid2">
+      <div class="form-group">
+        <label class="form-label">Station ID</label>
+        <input type="text" id="s-code" placeholder="e.g. A or 01">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Station name</label>
+        <input type="text" id="s-name" placeholder="e.g. Waterfront Arch">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mission type</label>
+      <select id="s-type" onchange="updateTypeHint()">
+        <option value="text">Text clue</option>
+        <option value="image">Image clue</option>
+        <option value="gps">GPS location</option>
+        <option value="video">Video clue</option>
+      </select>
+      <div id="s-type-hint" style="font-size:11px;color:var(--tan-dark);margin-top:4px"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Clue / instruction</label>
+      <textarea id="s-clue" placeholder="What the team sees at this station..."></textarea>
+    </div>
+    <div id="s-media-group" class="form-group" style="display:none">
+      <label class="form-label">Media URL (image/video)</label>
+      <input type="text" id="s-media" placeholder="https://cloudinary.com/...">
+    </div>
+    <div id="s-gps-group" class="grid2" style="display:none">
+      <div class="form-group">
+        <label class="form-label">GPS Latitude</label>
+        <input type="number" id="s-lat" placeholder="1.2647" step="0.0001">
+      </div>
+      <div class="form-group">
+        <label class="form-label">GPS Longitude</label>
+        <input type="number" id="s-lng" placeholder="103.8220" step="0.0001">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Correct answer</label>
+      <input type="text" id="s-answer" placeholder="Case-insensitive match">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hint text</label>
+      <input type="text" id="s-hint" placeholder="Shown when team types /hint">
+    </div>
+    <div class="grid2">
+      <div class="form-group">
+        <label class="form-label">Hint cost (pts)</label>
+        <input type="number" id="s-hint-cost" value="5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Answer reveal cost (pts)</label>
+        <input type="number" id="s-answer-cost" value="20">
+      </div>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="s-photo">
+      <label for="s-photo">Require photo submission at this station</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveStation()">Save station</button>
+      <button class="btn btn-red btn-sm" id="delete-station-btn" onclick="deleteStation()" style="display:none">
+        <i class="ti ti-trash"></i> Delete
+      </button>
+      <button class="btn" onclick="closeModal('modal-station')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Add Team Modal ─────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-team">
+  <div class="modal">
+    <div class="modal-title">👥 Add team</div>
+    <div class="form-group">
+      <label class="form-label">Team name</label>
+      <input type="text" id="t-name" placeholder="e.g. HabisBalik">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Leader name</label>
+      <input type="text" id="t-leader" placeholder="e.g. Lim chee kiong">
+    </div>
+    <div class="grid2">
+      <div class="form-group">
+        <label class="form-label">Mobile number</label>
+        <input type="text" id="t-mobile" placeholder="+6590687455">
+      </div>
+      <div class="form-group">
+        <label class="form-label">WhatsApp number</label>
+        <input type="text" id="t-wa" placeholder="+6590687455">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveTeam()">Add team</button>
+      <button class="btn" onclick="closeModal('modal-team')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Broadcast Modal ────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-broadcast">
+  <div class="modal">
+    <div class="modal-title">📢 Broadcast message</div>
+    <div class="form-group">
+      <label class="form-label">Message to all teams</label>
+      <textarea id="bc-msg" placeholder="Type your message here..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="sendBroadcast()">
+        <i class="ti ti-send"></i> Send to all teams
+      </button>
+      <button class="btn" onclick="closeModal('modal-broadcast')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Penalty Modal ──────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-penalty">
+  <div class="modal">
+    <div class="modal-title">⚠️ Apply penalty</div>
+    <input type="hidden" id="pen-team-id">
+    <div class="form-group">
+      <label class="form-label">Team</label>
+      <input type="text" id="pen-team-name" readonly>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reason</label>
+      <input type="text" id="pen-reason" placeholder="e.g. Skipped station check-in">
+    </div>
+    <div class="grid2">
+      <div class="form-group">
+        <label class="form-label">Points deduct</label>
+        <input type="number" id="pen-pts" value="10">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Time add (min)</label>
+        <input type="number" id="pen-time" value="5">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-red" onclick="submitPenalty()">Apply penalty</button>
+      <button class="btn" onclick="closeModal('modal-penalty')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="../static/js/admin.js"></script>
+</body>
+</html>

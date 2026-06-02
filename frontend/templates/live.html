@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Leaderboard — Amazing Race</title>
+  <link rel="stylesheet" href="../static/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <style>
+    body { background: var(--tan); }
+    .live-shell {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+    .live-header {
+      background: var(--cream);
+      border: 3px dashed var(--red);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .live-title {
+      font-family: var(--font-hand);
+      font-size: 28px;
+      color: var(--dark);
+    }
+    .live-org {
+      font-size: 13px;
+      color: var(--tan-dark);
+      margin-top: 2px;
+    }
+    .live-dot-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-hand);
+      font-size: 15px;
+      color: var(--red);
+    }
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .4; transform: scale(.8); }
+    }
+    .live-clock {
+      font-family: monospace;
+      font-size: 13px;
+      color: var(--tan-dark);
+    }
+    .live-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .live-stat {
+      background: var(--cream);
+      border: 2px dashed var(--tan-dark);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      text-align: center;
+    }
+    .live-stat-val {
+      font-family: var(--font-hand);
+      font-size: 30px;
+      color: var(--dark);
+    }
+    .live-stat-lbl {
+      font-size: 11px;
+      color: var(--tan-dark);
+      margin-top: 2px;
+    }
+    .tab-bar { background: var(--cream); border-radius: var(--radius) var(--radius) 0 0; padding: 0 16px; border: 2px dashed var(--tan-dark); border-bottom: none; }
+    .board-wrap { background: var(--cream); border: 2px dashed var(--tan-dark); border-radius: 0 0 var(--radius) var(--radius); padding: 16px; }
+    .rank-row {
+      display: grid;
+      grid-template-columns: 44px 1fr 100px 60px 60px 80px;
+      align-items: center;
+      padding: 12px 8px;
+      border-bottom: 1px dashed var(--tan);
+      gap: 8px;
+    }
+    .rank-row:last-child { border-bottom: none; }
+    .rank-num {
+      font-family: var(--font-hand);
+      font-size: 24px;
+      text-align: center;
+    }
+    .team-card-live {
+      background: var(--cream);
+      border: 2px dashed var(--tan-dark);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .team-card-live.first {
+      border-color: var(--red);
+      border-style: solid;
+    }
+    .tc-head {
+      padding: 12px 16px;
+      border-bottom: 1px dashed var(--tan);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .tc-name-live {
+      font-family: var(--font-hand);
+      font-size: 18px;
+      color: var(--dark);
+    }
+    .tc-body-live {
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .tc-mini {
+      text-align: center;
+    }
+    .tc-mini-val {
+      font-family: var(--font-hand);
+      font-size: 20px;
+      color: var(--dark);
+    }
+    .tc-mini-lbl {
+      font-size: 10px;
+      color: var(--tan-dark);
+    }
+    .route-wrap {
+      padding: 0 16px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .station-map-row {
+      display: grid;
+      grid-template-columns: 140px repeat(4, 1fr);
+      align-items: center;
+      padding: 8px 10px;
+      border-bottom: 1px dashed var(--tan);
+      gap: 8px;
+      font-size: 12px;
+    }
+    .station-map-row:last-child { border-bottom: none; }
+    .sm-status {
+      text-align: center;
+      font-family: var(--font-hand);
+      font-size: 13px;
+      padding: 2px 6px;
+      border-radius: 20px;
+    }
+    .sm-done    { background: var(--green-light); color: var(--green); }
+    .sm-current { background: var(--red-light); color: var(--red); }
+    .sm-todo    { background: var(--cream-dark); color: var(--tan-dark); }
+    .refresh-note {
+      text-align: center;
+      font-size: 11px;
+      color: var(--tan-dark);
+      margin-top: 12px;
+    }
+    @media (max-width: 600px) {
+      .live-stats { grid-template-columns: repeat(2,1fr); }
+      .rank-row { grid-template-columns: 36px 1fr 70px 50px; }
+      .tc-body-live { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="live-shell">
+
+  <!-- Header -->
+  <div class="live-header">
+    <div>
+      <div class="live-title" id="race-name">Loading...</div>
+      <div class="live-org" id="race-org"></div>
+    </div>
+    <div class="live-dot-wrap">
+      <div class="live-indicator">
+        <div class="pulse-dot"></div> Live
+      </div>
+      <div class="live-clock" id="clock">--:--:--</div>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="live-stats">
+    <div class="live-stat">
+      <div class="live-stat-val" id="stat-teams">—</div>
+      <div class="live-stat-lbl">Teams racing</div>
+    </div>
+    <div class="live-stat">
+      <div class="live-stat-val" id="stat-stations">—</div>
+      <div class="live-stat-lbl">Total stations</div>
+    </div>
+    <div class="live-stat">
+      <div class="live-stat-val" id="stat-cleared">—</div>
+      <div class="live-stat-lbl">Stages cleared</div>
+    </div>
+    <div class="live-stat">
+      <div class="live-stat-val" id="stat-wrong">—</div>
+      <div class="live-stat-lbl">Wrong answers</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar tab-bar--live">
+    <div style="display:flex;gap:4px;border-bottom:2px dashed var(--tan);padding-bottom:0">
+      <button class="tab-btn active" onclick="showLiveTab('leaderboard',this)">Leaderboard</button>
+      <button class="tab-btn" onclick="showLiveTab('cards',this)">Team cards</button>
+      <button class="tab-btn" onclick="showLiveTab('map',this)">Station map</button>
+    </div>
+  </div>
+  <div class="board-wrap">
+    <div id="live-leaderboard" class="tab-pane active"></div>
+    <div id="live-cards" class="tab-pane"></div>
+    <div id="live-map" class="tab-pane"></div>
+  </div>
+
+  <div class="refresh-note" id="refresh-note">Refreshes every 30 seconds</div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:8000/api/live';
+let liveData = null;
+
+async function fetchData() {
+  try {
+    const res = await fetch(API);
+    liveData = await res.json();
+    render();
+    document.getElementById('refresh-note').textContent =
+      'Last updated: ' + new Date().toLocaleTimeString('en-SG');
+  } catch(e) {
+    document.getElementById('race-name').textContent = 'Could not connect to server';
+  }
+}
+
+function render() {
+  if (!liveData || liveData.status === 'no_race') {
+    document.getElementById('race-name').textContent = 'No race running';
+    return;
+  }
+  const d = liveData;
+  document.getElementById('race-name').textContent = d.race_name;
+  document.getElementById('race-org').textContent = d.org;
+
+  const totalCleared = d.teams.reduce((s,t) => s + t.stages_done, 0);
+  const totalWrong   = d.teams.reduce((s,t) => s + t.wrong_count, 0);
+  document.getElementById('stat-teams').textContent    = d.teams.length;
+  document.getElementById('stat-stations').textContent = d.total_stations;
+  document.getElementById('stat-cleared').textContent  = totalCleared;
+  document.getElementById('stat-wrong').textContent    = totalWrong;
+
+  renderLeaderboard(d);
+  renderCards(d);
+  renderMap(d);
+}
+
+function renderLeaderboard(d) {
+  const medals = ['🥇','🥈','🥉'];
+  document.getElementById('live-leaderboard').innerHTML = `
+    <div style="display:grid;grid-template-columns:44px 1fr 100px 60px 60px 80px;gap:8px;padding:6px 8px;border-bottom:2px dashed var(--tan)">
+      <span style="font-size:10px;color:var(--tan-dark)"></span>
+      <span style="font-size:10px;color:var(--tan-dark);font-family:var(--font-hand)">Team</span>
+      <span style="font-size:10px;color:var(--tan-dark)">Progress</span>
+      <span style="font-size:10px;color:var(--tan-dark)">Wrong</span>
+      <span style="font-size:10px;color:var(--tan-dark)">Hints</span>
+      <span style="font-size:10px;color:var(--tan-dark)">Penalty</span>
+    </div>
+    ${d.teams.map((t,i) => `
+      <div class="rank-row">
+        <div class="rank-num">${medals[i] || '#'+(i+1)}</div>
+        <div>
+          <div style="font-family:var(--font-hand);font-size:17px">${t.name}</div>
+          <div style="font-size:11px;color:var(--tan-dark)">${t.leader}</div>
+        </div>
+        <div>
+          <div style="font-size:12px">${t.stages_done} / ${d.total_stations}</div>
+          <div class="prog-bg">
+            <div class="prog-fill" style="width:${d.total_stations ? Math.round(t.stages_done/d.total_stations*100) : 0}%"></div>
+          </div>
+        </div>
+        <div style="font-family:var(--font-hand);font-size:18px;color:var(--red)">${t.wrong_count}</div>
+        <div style="font-family:var(--font-hand);font-size:18px">${t.hints_used}</div>
+        <div style="font-family:monospace;font-size:12px">+${t.penalty_mins}min</div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderCards(d) {
+  document.getElementById('live-cards').innerHTML = d.teams.map((t,i) => `
+    <div class="team-card-live ${i===0?'first':''}">
+      <div class="tc-head">
+        <div class="tc-name-live">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)} ${t.name}</div>
+        <span class="badge badge-${t.status==='racing'?'live':'draft'}">${t.status}</span>
+      </div>
+      <div class="tc-body-live">
+        <div class="tc-mini">
+          <div class="tc-mini-val">${t.stages_done}/${d.total_stations}</div>
+          <div class="tc-mini-lbl">Stages</div>
+        </div>
+        <div class="tc-mini">
+          <div class="tc-mini-val" style="color:var(--red)">${t.wrong_count}</div>
+          <div class="tc-mini-lbl">Wrong ans.</div>
+        </div>
+        <div class="tc-mini">
+          <div class="tc-mini-val">${t.hints_used}</div>
+          <div class="tc-mini-lbl">Hints</div>
+        </div>
+        <div class="tc-mini">
+          <div class="tc-mini-val" style="font-size:16px">+${t.penalty_mins}m</div>
+          <div class="tc-mini-lbl">Penalty</div>
+        </div>
+      </div>
+      <div class="route-wrap">
+        ${(t.route||[]).map((code,idx) => {
+          const cls = idx < t.stages_done ? 'done'
+            : code === t.current_station ? 'cur' : '';
+          return `<span class="rp ${cls}">${code}</span>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderMap(d) {
+  const header = `
+    <div style="display:grid;grid-template-columns:140px ${d.teams.map(()=>'1fr').join(' ')};gap:8px;padding:6px 10px;border-bottom:2px dashed var(--tan)">
+      <span style="font-size:10px;color:var(--tan-dark)">Station</span>
+      ${d.teams.map(t=>`<span style="font-size:10px;color:var(--tan-dark);text-align:center;font-family:var(--font-hand)">${t.name}</span>`).join('')}
+    </div>`;
+
+  const allCodes = [...new Set(d.teams.flatMap(t => t.route||[]))];
+  const rows = allCodes.map(code => {
+    const cells = d.teams.map(t => {
+      const route = t.route || [];
+      const doneIdx = route.slice(0, t.stages_done);
+      const isCurrent = t.current_station === code;
+      const isDone = doneIdx.includes(code);
+      const cls = isDone ? 'sm-done' : isCurrent ? 'sm-current' : 'sm-todo';
+      const label = isDone ? '✓ done' : isCurrent ? '● now' : '—';
+      return `<div class="sm-status ${cls}">${label}</div>`;
+    }).join('');
+    return `
+      <div class="station-map-row">
+        <div style="font-family:var(--font-hand);font-size:14px">Station ${code}</div>
+        ${cells}
+      </div>`;
+  }).join('');
+
+  document.getElementById('live-map').innerHTML = header + rows;
+}
+
+function showLiveTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('live-' + id).classList.add('active');
+}
+
+function tick() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('en-SG');
+}
+
+tick();
+setInterval(tick, 1000);
+fetchData();
+setInterval(fetchData, 30000);
+</script>
+</body>
+</html>

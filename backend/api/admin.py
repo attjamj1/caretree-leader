@@ -1,0 +1,367 @@
+from fastapi import APIRouter, Depends, HTTPException, Header
+from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from typing import Optional
+import os
+from datetime import datetime, timezone
+
+from db.database import get_db
+from models.models import Project, Team, Station, Progress, EventLog
+from core.station_router import assign_routes
+from core import whatsapp as wa
+
+router = APIRouter()
+
+
+# ─── Auth ─────────────────────────────────────────────────────────────────────
+
+def require_api_key(x_api_key: str = Header(...)):
+    if x_api_key != os.getenv("ADMIN_API_KEY", "changeme"):
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    return x_api_key
+
+
+# ─── Schemas ──────────────────────────────────────────────────────────────────
+
+class ProjectCreate(BaseModel):
+    name: str
+    org: str = ""
+    event_date: str = ""
+    team_count: int = 4
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    org: Optional[str] = None
+    event_date: Optional[str] = None
+    status: Optional[str] = None
+    scoring_wrong_pts: Optional[int] = None
+    scoring_wrong_time: Optional[int] = None
+    scoring_hint_pts: Optional[int] = None
+    scoring_answer_pts: Optional[int] = None
+    scoring_stage_pts: Optional[int] = None
+
+class TeamCreate(BaseModel):
+    name: str
+    leader_name: str = ""
+    mobile: str = ""
+    group_number: str = ""
+
+class StationCreate(BaseModel):
+    station_code: str
+    name: str
+    order_index: int = 0
+    mission_type: str = "text"
+    clue_text: str = ""
+    clue_media_url: str = ""
+    gps_lat: Optional[float] = None
+    gps_lng: Optional[float] = None
+    answer: str
+    hint_text: str = ""
+    hint_cost: int = 5
+    answer_cost: int = 20
+    photo_required: bool = False
+
+class BroadcastMsg(BaseModel):
+    message: str
+
+class PenaltyApply(BaseModel):
+    team_id: str
+    reason: str
+    pts: int = 10
+    time_mins: int = 5
+
+
+# ─── Projects ─────────────────────────────────────────────────────────────────
+
+@router.get("/projects")
+def list_projects(db: Session = Depends(get_db), _=Depends(require_api_key)):
+    projects = db.query(Project).order_by(Project.created_at.desc()).all()
+    return [_project_dict(p) for p in projects]
+
+
+@router.post("/projects")
+def create_project(data: ProjectCreate, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    p = Project(name=data.name, org=data.org, event_date=data.event_date)
+    db.add(p)
+    db.commit()
+    db.refresh(p)
+    return _project_dict(p)
+
+
+@router.get("/projects/{project_id}")
+def get_project(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    p = _get_or_404(db, Project, project_id)
+    return _project_dict(p, detail=True)
+
+
+@router.patch("/projects/{project_id}")
+def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    p = _get_or_404(db, Project, project_id)
+    for field, value in data.dict(exclude_none=True).items():
+        setattr(p, field, value)
+    db.commit()
+    return _project_dict(p)
+
+
+@router.delete("/projects/{project_id}")
+def delete_project(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    p = _get_or_404(db, Project, project_id)
+    db.delete(p)
+    db.commit()
+    return {"ok": True}
+
+
+# ─── Race control ─────────────────────────────────────────────────────────────
+
+@router.post("/projects/{project_id}/start")
+async def start_race(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    p = _get_or_404(db, Project, project_id)
+    if not p.stations:
+        raise HTTPException(400, "Add stations before starting")
+    if not p.teams:
+        raise HTTPException(400, "Add teams before starting")
+
+    assign_routes(p, db)
+
+    p.status = "live"
+    for team in p.teams:
+        team.status = "racing"
+        team.start_time = datetime.now(timezone.utc)
+    db.commit()
+
+    for team in p.teams:
+        first_station = None
+        for code in team.route:
+            first_station = db.query(Station).filter_by(
+                project_id=p.id, station_code=code
+            ).first()
+            if first_station:
+                break
+
+        await wa.send_text(
+            team.group_number,
+            f"🏁 *{p.name} has begun!*\n\n"
+            f"Welcome, team *{team.name}*!\n"
+            f"You have {len(p.stations)} stations to complete.\n\n"
+            f"Here is your first mission 👇"
+        )
+        if first_station:
+            await wa.send_station(team.group_number, first_station, p)
+
+    return {"ok": True, "message": "Race started, missions sent to all teams"}
+
+
+@router.post("/projects/{project_id}/end")
+def end_race(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    p = _get_or_404(db, Project, project_id)
+    p.status = "done"
+    for team in p.teams:
+        if team.status == "racing":
+            team.status = "finished"
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/projects/{project_id}/broadcast")
+async def broadcast(project_id: str, data: BroadcastMsg, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    p = _get_or_404(db, Project, project_id)
+    for team in p.teams:
+        await wa.send_text(team.group_number, data.message)
+    return {"ok": True, "sent_to": len(p.teams)}
+
+
+@router.post("/projects/{project_id}/penalty")
+async def apply_penalty(project_id: str, data: PenaltyApply, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    team = _get_or_404(db, Team, data.team_id)
+    log = EventLog(
+        team_id=team.id,
+        project_id=project_id,
+        event_type="penalty",
+        message=f"Manual penalty: {data.reason}",
+        pts_change=-data.pts,
+        time_added=data.time_mins,
+    )
+    db.add(log)
+    db.commit()
+    await wa.send_text(
+        team.group_number,
+        f"⚠️ *Penalty applied*\n{data.reason}\n"
+        f"-{data.pts} pts · +{data.time_mins} min"
+    )
+    return {"ok": True}
+
+
+@router.post("/projects/{project_id}/shuffle-routes")
+def shuffle_routes(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    p = _get_or_404(db, Project, project_id)
+    assign_routes(p, db)
+    return {"ok": True, "routes": {t.name: t.route for t in p.teams}}
+
+
+# ─── Stations ─────────────────────────────────────────────────────────────────
+
+@router.get("/projects/{project_id}/stations")
+def list_stations(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    stations = db.query(Station).filter_by(project_id=project_id).order_by(Station.order_index).all()
+    return [_station_dict(s) for s in stations]
+
+
+@router.post("/projects/{project_id}/stations")
+def create_station(project_id: str, data: StationCreate, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    _get_or_404(db, Project, project_id)
+    s = Station(
+        project_id=project_id,
+        **data.dict(),
+        answer=data.answer.upper().strip()
+    )
+    db.add(s)
+    db.commit()
+    db.refresh(s)
+    return _station_dict(s)
+
+
+@router.patch("/projects/{project_id}/stations/{station_id}")
+def update_station(project_id: str, station_id: str, data: StationCreate, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    s = _get_or_404(db, Station, station_id)
+    for field, value in data.dict().items():
+        setattr(s, field, value)
+    s.answer = s.answer.upper().strip()
+    db.commit()
+    return _station_dict(s)
+
+
+@router.delete("/projects/{project_id}/stations/{station_id}")
+def delete_station(project_id: str, station_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    s = _get_or_404(db, Station, station_id)
+    db.delete(s)
+    db.commit()
+    return {"ok": True}
+
+
+# ─── Teams ────────────────────────────────────────────────────────────────────
+
+@router.get("/projects/{project_id}/teams")
+def list_teams(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    teams = db.query(Team).filter_by(project_id=project_id).all()
+    return [_team_dict(t) for t in teams]
+
+
+@router.post("/projects/{project_id}/teams")
+def create_team(project_id: str, data: TeamCreate, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    _get_or_404(db, Project, project_id)
+    t = Team(project_id=project_id, **data.dict())
+    db.add(t)
+    db.commit()
+    db.refresh(t)
+    return _team_dict(t)
+
+
+@router.delete("/projects/{project_id}/teams/{team_id}")
+def delete_team(project_id: str, team_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    t = _get_or_404(db, Team, team_id)
+    db.delete(t)
+    db.commit()
+    return {"ok": True}
+
+
+# ─── Leaderboard + Logs ───────────────────────────────────────────────────────
+
+@router.get("/projects/{project_id}/leaderboard")
+def get_leaderboard(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    p = _get_or_404(db, Project, project_id)
+    teams = sorted(p.teams, key=lambda t: (-t.stages_done, t.penalty_mins))
+    return [_team_dict(t, rank=i+1) for i, t in enumerate(teams)]
+
+
+@router.get("/projects/{project_id}/logs")
+def get_logs(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+    logs = (
+        db.query(EventLog)
+        .filter_by(project_id=project_id)
+        .order_by(EventLog.created_at.desc())
+        .limit(200)
+        .all()
+    )
+    return [
+        {
+            "id": l.id,
+            "team_id": l.team_id,
+            "event_type": l.event_type,
+            "station_code": l.station_code,
+            "message": l.message,
+            "pts_change": l.pts_change,
+            "time_added": l.time_added,
+            "created_at": l.created_at.isoformat() if l.created_at else None,
+        }
+        for l in logs
+    ]
+
+
+# ─── Helpers ──────────────────────────────────────────────────────────────────
+
+def _get_or_404(db, model, id):
+    obj = db.query(model).filter_by(id=id).first()
+    if not obj:
+        raise HTTPException(404, f"{model.__name__} not found")
+    return obj
+
+
+def _project_dict(p: Project, detail=False):
+    d = {
+        "id": p.id,
+        "name": p.name,
+        "org": p.org,
+        "event_date": p.event_date,
+        "status": p.status,
+        "station_count": len(p.stations),
+        "team_count": len(p.teams),
+        "scoring": {
+            "wrong_pts": p.scoring_wrong_pts,
+            "wrong_time": p.scoring_wrong_time,
+            "hint_pts": p.scoring_hint_pts,
+            "answer_pts": p.scoring_answer_pts,
+            "stage_pts": p.scoring_stage_pts,
+        },
+    }
+    if detail:
+        d["teams"] = [_team_dict(t) for t in p.teams]
+        d["stations"] = [_station_dict(s) for s in p.stations]
+    return d
+
+
+def _team_dict(t: Team, rank=None):
+    return {
+        "id": t.id,
+        "name": t.name,
+        "leader_name": t.leader_name,
+        "mobile": t.mobile,
+        "group_number": t.group_number,
+        "status": t.status,
+        "route": t.route,
+        "stages_done": t.stages_done,
+        "wrong_count": t.wrong_count,
+        "hints_used": t.hints_used,
+        "penalty_mins": t.penalty_mins,
+        "start_time": t.start_time.isoformat() if t.start_time else None,
+        "end_time": t.end_time.isoformat() if t.end_time else None,
+        **({"rank": rank} if rank else {}),
+    }
+
+
+def _station_dict(s: Station):
+    return {
+        "id": s.id,
+        "station_code": s.station_code,
+        "name": s.name,
+        "order_index": s.order_index,
+        "mission_type": s.mission_type,
+        "clue_text": s.clue_text,
+        "clue_media_url": s.clue_media_url,
+        "gps_lat": s.gps_lat,
+        "gps_lng": s.gps_lng,
+        "answer": s.answer,
+        "hint_text": s.hint_text,
+        "hint_cost": s.hint_cost,
+        "answer_cost": s.answer_cost,
+        "photo_required": s.photo_required,
+    }
