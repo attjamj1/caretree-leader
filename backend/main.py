@@ -59,6 +59,11 @@ def live_dashboard():
     return FileResponse(os.path.join(frontend_path, "templates", "live.html"))
 
 
+@app.get("/live/{project_id}")
+def live_dashboard_project(project_id: str):
+    return FileResponse(os.path.join(frontend_path, "templates", "live.html"))
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}

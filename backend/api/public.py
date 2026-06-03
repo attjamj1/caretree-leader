@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.database import get_db
 from models.models import Project
@@ -6,31 +6,13 @@ from models.models import Project
 router = APIRouter()
 
 
-@router.get("/live")
-def get_live(db: Session = Depends(get_db)):
-    """
-    Public endpoint — no auth needed.
-    Returns only safe, non-sensitive data for the public leaderboard.
-    """
-    project = db.query(Project).filter_by(status="live").first()
-    if not project:
-        done = (
-            db.query(Project)
-            .filter_by(status="done")
-            .order_by(Project.created_at.desc())
-            .first()
-        )
-        if done:
-            project = done
-        else:
-            return {"status": "no_race", "teams": []}
-
+def _project_data(project):
     sorted_teams = sorted(
         project.teams,
         key=lambda t: (-t.stages_done, t.penalty_mins)
     )
-
     return {
+        "project_id": project.id,
         "race_name": project.name,
         "org": project.org,
         "status": project.status,
@@ -52,6 +34,34 @@ def get_live(db: Session = Depends(get_db)):
             for i, t in enumerate(sorted_teams)
         ],
     }
+
+
+@router.get("/live/{project_id}")
+def get_live_project(project_id: str, db: Session = Depends(get_db)):
+    """Per-project live leaderboard — no auth needed."""
+    project = db.query(Project).filter_by(id=project_id).first()
+    if not project:
+        raise HTTPException(404, "Race not found")
+    return _project_data(project)
+
+
+@router.get("/live")
+def get_live(db: Session = Depends(get_db)):
+    """Fallback — returns first live project."""
+    project = db.query(Project).filter_by(status="live").first()
+    if not project:
+        done = (
+            db.query(Project)
+            .filter_by(status="done")
+            .order_by(Project.created_at.desc())
+            .first()
+        )
+        if done:
+            project = done
+        else:
+            return {"status": "no_race", "teams": []}
+
+    return _project_data(project)
 
 
 def _current_station(team):

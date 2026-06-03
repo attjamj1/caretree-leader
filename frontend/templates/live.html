@@ -238,7 +238,10 @@
 </div>
 
 <script>
-const API = '/api/live';
+// Use project-specific endpoint if URL is /live/{project_id}
+const pathParts = window.location.pathname.split('/').filter(Boolean);
+const projectId = pathParts.length >= 2 ? pathParts[1] : null;
+const API = projectId ? `/api/live/${projectId}` : '/api/live';
 let liveData = null;
 
 async function fetchData() {

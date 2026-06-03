@@ -160,7 +160,8 @@ async function toggleRace() {
 }
 
 function openLive() {
-  window.open('/live', '_blank');
+  const id = activeProject?.id;
+  window.open(id ? `/live/${id}` : '/live', '_blank');
 }
 
 // ─── Main content ──────────────────────────────────────────────────────────
