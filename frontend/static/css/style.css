@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 /* ─── Variables ───────────────────────────────────────────────────────────── */
 :root {
@@ -15,8 +15,8 @@
   --green-light:  #DCF5E8;
   --yellow:       #F0C040;
   --yellow-light: #FEF9C3;
-  --font-hand:    'Caveat', cursive;
-  --font-body:    'Inter', sans-serif;
+  --font-hand:    'DM Serif Display', serif;
+  --font-body:    'DM Sans', sans-serif;
   --radius:       12px;
   --radius-sm:    6px;
 }
@@ -65,11 +65,27 @@ body {
 }
 .topbar-logo {
   font-family: var(--font-hand);
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 400;
   color: var(--red);
   letter-spacing: -0.5px;
 }
+.btn-guide {
+  background: var(--cream-dark);
+  border: 1.5px solid var(--tan-dark);
+  color: var(--dark-mid);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background .15s;
+}
+.btn-guide:hover { background: var(--tan); }
 .topbar-logo span { color: var(--dark); }
 .topbar-right {
   display: flex;
@@ -130,6 +146,20 @@ body {
   flex: 1;
 }
 .proj-item.active .proj-item-name { color: var(--red); }
+.proj-delete-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--tan-dark);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.proj-delete-btn:hover { background: var(--red); color: #fff; }
+.proj-item:hover .proj-delete-btn { display: block; }
 .proj-badge {
   font-size: 10px;
   padding: 1px 6px;
@@ -622,28 +652,16 @@ tbody tr:hover td { background: var(--cream-dark); }
   .grid2, .grid3 { grid-template-columns: 1fr; }
 }
 
-/* ─── Guide / Slideshow ───────────────────────────────────────────────────── */
-.guide-wrapper { padding: 16px 0; }
+/* ─── Guide / Scrollable ──────────────────────────────────────────────────── */
+.guide-wrapper { padding: 8px 0; }
 
-.guide-nav {
+.guide-deck {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  flex-direction: column;
+  gap: 24px;
 }
-.guide-dots { display: flex; gap: 6px; }
-.guide-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--tan);
-  cursor: pointer;
-  transition: background .2s;
-}
-.guide-dot.active { background: var(--red); }
 
-.guide-deck { position: relative; }
-.guide-slide { display: none; border: 1.5px solid var(--tan); border-radius: 10px; overflow: hidden; background: var(--cream); }
-.guide-slide.active { display: block; }
+.guide-slide { border: 1.5px solid var(--tan); border-radius: 10px; overflow: hidden; background: var(--cream); }
 
 .guide-slide-stripe {
   height: 6px;

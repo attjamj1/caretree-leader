@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 import os
 
 from db.database import init_db
-from api import webhook, admin, public
+from api import webhook, admin, public, auth
 
 
 @asynccontextmanager
@@ -30,6 +30,7 @@ app.add_middleware(
 )
 
 app.include_router(webhook.router)
+app.include_router(auth.router, prefix="/api", tags=["auth"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(public.router, prefix="/api", tags=["public"])
 
@@ -46,6 +47,11 @@ app.mount(
 @app.get("/")
 def admin_dashboard():
     return FileResponse(os.path.join(frontend_path, "templates", "index.html"))
+
+
+@app.get("/register")
+def register_page():
+    return FileResponse(os.path.join(frontend_path, "templates", "register.html"))
 
 
 @app.get("/live")

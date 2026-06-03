@@ -9,16 +9,20 @@ from db.database import get_db
 from models.models import Project, Team, Station, Progress, EventLog
 from core.station_router import assign_routes
 from core import whatsapp as wa
+from api.auth import verify_token
 
 router = APIRouter()
 
 
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 
-def require_api_key(x_api_key: str = Header(...)):
-    if x_api_key != os.getenv("ADMIN_API_KEY", "changeme"):
-        raise HTTPException(status_code=401, detail="Invalid API key")
-    return x_api_key
+def require_api_key(x_api_key: str = Header(default="")):
+    # Accept legacy API key OR a JWT token
+    if x_api_key == os.getenv("ADMIN_API_KEY", "changeme"):
+        return x_api_key
+    if verify_token(x_api_key):
+        return x_api_key
+    raise HTTPException(status_code=401, detail="Invalid credentials")
 
 
 # ─── Schemas ──────────────────────────────────────────────────────────────────
