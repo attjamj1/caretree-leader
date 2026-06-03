@@ -29,6 +29,7 @@ class Project(Base):
     __tablename__ = "projects"
 
     id          = Column(String, primary_key=True, default=gen_id)
+    user_id     = Column(String, nullable=True)   # username of the owner; nullable for legacy rows
     name        = Column(String, nullable=False)
     org         = Column(String, default="")
     event_date  = Column(String, default="")

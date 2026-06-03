@@ -9,39 +9,54 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
-<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;">
+<body style="margin:0;min-height:100vh;display:flex;">
 
-  <div style="text-align:center;margin-bottom:28px;">
-    <div style="font-family:var(--font-hand);font-size:36px;color:var(--red);font-style:italic;margin-bottom:6px;">Race & Run!</div>
-    <div style="font-size:13px;color:var(--dark-mid);">Create your admin account</div>
+  <!-- Left decorative panel -->
+  <div class="auth-left">
+    <div class="auth-left-inner">
+      <div class="auth-brand">race <span>&</span> run!</div>
+      <div class="auth-tagline">WhatsApp Amazing Race — Operator Portal</div>
+      <div class="auth-features">
+        <div class="auth-feat">🏁 Run multi-station races</div>
+        <div class="auth-feat">📱 Teams play via WhatsApp</div>
+        <div class="auth-feat">📊 Live leaderboard & admin controls</div>
+      </div>
+    </div>
+    <div class="auth-left-stripe"></div>
   </div>
 
-  <div style="background:#fff;border:1.5px solid var(--tan);border-radius:12px;padding:28px 32px;width:320px;">
-    <div class="form-group">
-      <label class="form-label">Username</label>
-      <input type="text" id="reg-user" placeholder="choose a username" style="width:100%;" onkeydown="if(event.key==='Enter')doRegister()">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Password</label>
-      <input type="password" id="reg-pass" placeholder="••••••••" style="width:100%;" onkeydown="if(event.key==='Enter')doRegister()">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Confirm password</label>
-      <input type="password" id="reg-confirm" placeholder="••••••••" style="width:100%;" onkeydown="if(event.key==='Enter')doRegister()">
-    </div>
-    <div id="reg-error" style="color:var(--red);font-size:11px;margin-bottom:10px;display:none;"></div>
-    <div id="reg-success" style="color:var(--green);font-size:11px;margin-bottom:10px;display:none;">Account created! Redirecting...</div>
-    <button class="btn btn-primary" style="width:100%;margin-top:4px;" onclick="doRegister()">Create account →</button>
-    <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--tan-dark);">
-      Already have an account? <a href="/" style="color:var(--red);text-decoration:none;font-weight:600;">Sign in</a>
-    </div>
-  </div>
+  <!-- Right form panel -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <div class="auth-form-title">Create an account</div>
+      <div class="auth-form-sub">Set up your admin access</div>
 
-  <div style="margin-top:14px;font-size:11px;color:var(--tan-dark);">
-    Spectators? <a href="/live" style="color:var(--red);text-decoration:none;font-weight:600;">View live leaderboard ↗</a>
-  </div>
+      <div class="form-group" style="margin-top:28px;">
+        <label class="form-label">Username</label>
+        <input type="text" id="reg-user" placeholder="Choose a username" style="width:100%;" onkeydown="if(event.key==='Enter')doRegister()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="reg-pass" placeholder="At least 6 characters" style="width:100%;" onkeydown="if(event.key==='Enter')doRegister()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm password</label>
+        <input type="password" id="reg-confirm" placeholder="Repeat your password" style="width:100%;" onkeydown="if(event.key==='Enter')doRegister()">
+      </div>
+      <div id="reg-error" class="auth-error"></div>
+      <div id="reg-success" style="color:var(--green);font-size:12px;margin-bottom:10px;display:none;font-weight:500;">✓ Account created! Redirecting...</div>
+      <button class="btn btn-primary auth-submit" onclick="doRegister()">Create account →</button>
 
-  <div style="position:fixed;bottom:0;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,var(--red) 0,var(--red) 8px,var(--blue-stripe) 8px,var(--blue-stripe) 16px);"></div>
+      <div class="auth-divider"></div>
+      <div class="auth-links">
+        Already have an account? <a href="/" class="auth-link">Sign in</a>
+      </div>
+      <div class="auth-links" style="margin-top:8px;">
+        Spectators? <a href="/live" class="auth-link">View live leaderboard ↗</a>
+      </div>
+    </div>
+    <div class="auth-footer">© Lim Jamie Claire</div>
+  </div>
 
 <script>
 async function doRegister() {

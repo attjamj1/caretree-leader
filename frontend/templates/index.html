@@ -13,30 +13,51 @@
 <body>
 
 <!-- ─── Login Screen ──────────────────────────────────────────────────────── -->
-<div id="login-screen" style="position:fixed;inset:0;background:var(--cream);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;">
-  <div style="text-align:center;margin-bottom:28px;">
-    <div style="font-family:var(--font-hand);font-size:36px;color:var(--red);font-style:italic;margin-bottom:6px;">Race & Run!</div>
-    <div style="font-size:13px;color:var(--dark-mid);">Admin access only</div>
-  </div>
-  <div style="background:#fff;border:1.5px solid var(--tan);border-radius:12px;padding:28px 32px;width:320px;">
-    <div class="form-group">
-      <label class="form-label">Username</label>
-      <input type="text" id="login-user" placeholder="your username" style="width:100%;" onkeydown="if(event.key==='Enter')doLogin()">
+<div id="login-screen" style="position:fixed;inset:0;z-index:999;display:flex;">
+
+  <!-- Left decorative panel -->
+  <div class="auth-left">
+    <div class="auth-left-inner">
+      <div class="auth-brand">race <span>&</span> run!</div>
+      <div class="auth-tagline">WhatsApp Amazing Race — Operator Portal</div>
+      <div class="auth-features">
+        <div class="auth-feat">🏁 Run multi-station races</div>
+        <div class="auth-feat">📱 Teams play via WhatsApp</div>
+        <div class="auth-feat">📊 Live leaderboard & admin controls</div>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Password</label>
-      <input type="password" id="login-pass" placeholder="••••••••" style="width:100%;" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <div id="login-error" style="color:var(--red);font-size:11px;margin-bottom:10px;display:none;">Incorrect username or password.</div>
-    <button class="btn btn-primary" style="width:100%;margin-top:4px;" onclick="doLogin()">Sign in →</button>
-    <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--tan-dark);">
-      No account? <a href="/register" style="color:var(--red);text-decoration:none;font-weight:600;">Register here</a>
-    </div>
+    <div class="auth-left-stripe"></div>
   </div>
-  <div style="margin-top:14px;font-size:11px;color:var(--tan-dark);">
-    Spectators? <a href="/live" style="color:var(--red);text-decoration:none;font-weight:600;">View live leaderboard ↗</a>
+
+  <!-- Right form panel -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <div class="auth-form-title">Welcome back</div>
+      <div class="auth-form-sub">Sign in to your admin account</div>
+
+      <div class="form-group" style="margin-top:28px;">
+        <label class="form-label">Username</label>
+        <input type="text" id="login-user" placeholder="Enter your username" style="width:100%;" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="login-pass" placeholder="Enter your password" style="width:100%;" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div id="login-error" class="auth-error">Incorrect username or password.</div>
+      <button class="btn btn-primary auth-submit" onclick="doLogin()">Sign in →</button>
+
+      <div class="auth-divider"></div>
+      <div class="auth-links">
+        No account yet? <a href="/register" class="auth-link">Register here</a>
+      </div>
+      <div class="auth-links" style="margin-top:8px;">
+        Spectators? <a href="/live" class="auth-link">View live leaderboard ↗</a>
+      </div>
+    </div>
+    <div class="auth-footer">© Lim Jamie Claire</div>
   </div>
-  <div style="position:absolute;bottom:0;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,var(--red) 0,var(--red) 8px,var(--blue-stripe) 8px,var(--blue-stripe) 16px);"></div>
+
+</div>
 </div>
 
 <!-- ─── Main App (hidden until logged in) ─────────────────────────────────── -->

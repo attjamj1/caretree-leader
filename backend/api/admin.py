@@ -16,12 +16,15 @@ router = APIRouter()
 
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 
-def require_api_key(x_api_key: str = Header(default="")):
-    # Accept legacy API key OR a JWT token
+LEGACY_USER = "__admin__"  # placeholder owner for legacy API-key logins
+
+def require_api_key(x_api_key: str = Header(default="")) -> str:
+    """Returns the username of the authenticated user."""
     if x_api_key == os.getenv("ADMIN_API_KEY", "changeme"):
-        return x_api_key
-    if verify_token(x_api_key):
-        return x_api_key
+        return LEGACY_USER
+    username = verify_token(x_api_key)
+    if username:
+        return username
     raise HTTPException(status_code=401, detail="Invalid credentials")
 
 
@@ -78,14 +81,19 @@ class PenaltyApply(BaseModel):
 # ─── Projects ─────────────────────────────────────────────────────────────────
 
 @router.get("/projects")
-def list_projects(db: Session = Depends(get_db), _=Depends(require_api_key)):
-    projects = db.query(Project).order_by(Project.created_at.desc()).all()
+def list_projects(db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    projects = (
+        db.query(Project)
+        .filter((Project.user_id == user) | (Project.user_id == None))
+        .order_by(Project.created_at.desc())
+        .all()
+    )
     return [_project_dict(p) for p in projects]
 
 
 @router.post("/projects")
-def create_project(data: ProjectCreate, db: Session = Depends(get_db), _=Depends(require_api_key)):
-    p = Project(name=data.name, org=data.org, event_date=data.event_date)
+def create_project(data: ProjectCreate, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    p = Project(name=data.name, org=data.org, event_date=data.event_date, user_id=user)
     db.add(p)
     db.commit()
     db.refresh(p)
@@ -93,14 +101,14 @@ def create_project(data: ProjectCreate, db: Session = Depends(get_db), _=Depends
 
 
 @router.get("/projects/{project_id}")
-def get_project(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
-    p = _get_or_404(db, Project, project_id)
+def get_project(project_id: str, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    p = _get_or_404_owned(db, project_id, user)
     return _project_dict(p, detail=True)
 
 
 @router.patch("/projects/{project_id}")
-def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(get_db), _=Depends(require_api_key)):
-    p = _get_or_404(db, Project, project_id)
+def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    p = _get_or_404_owned(db, project_id, user)
     for field, value in data.dict(exclude_none=True).items():
         setattr(p, field, value)
     db.commit()
@@ -108,8 +116,8 @@ def update_project(project_id: str, data: ProjectUpdate, db: Session = Depends(g
 
 
 @router.delete("/projects/{project_id}")
-def delete_project(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
-    p = _get_or_404(db, Project, project_id)
+def delete_project(project_id: str, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    p = _get_or_404_owned(db, project_id, user)
     db.delete(p)
     db.commit()
     return {"ok": True}
@@ -118,8 +126,8 @@ def delete_project(project_id: str, db: Session = Depends(get_db), _=Depends(req
 # ─── Race control ─────────────────────────────────────────────────────────────
 
 @router.post("/projects/{project_id}/start")
-async def start_race(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
-    p = _get_or_404(db, Project, project_id)
+async def start_race(project_id: str, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    p = _get_or_404_owned(db, project_id, user)
     if not p.stations:
         raise HTTPException(400, "Add stations before starting")
     if not p.teams:
@@ -156,8 +164,8 @@ async def start_race(project_id: str, db: Session = Depends(get_db), _=Depends(r
 
 
 @router.post("/projects/{project_id}/end")
-def end_race(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
-    p = _get_or_404(db, Project, project_id)
+def end_race(project_id: str, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    p = _get_or_404_owned(db, project_id, user)
     p.status = "done"
     for team in p.teams:
         if team.status == "racing":
@@ -167,15 +175,15 @@ def end_race(project_id: str, db: Session = Depends(get_db), _=Depends(require_a
 
 
 @router.post("/projects/{project_id}/broadcast")
-async def broadcast(project_id: str, data: BroadcastMsg, db: Session = Depends(get_db), _=Depends(require_api_key)):
-    p = _get_or_404(db, Project, project_id)
+async def broadcast(project_id: str, data: BroadcastMsg, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    p = _get_or_404_owned(db, project_id, user)
     for team in p.teams:
         await wa.send_text(team.group_number, data.message)
     return {"ok": True, "sent_to": len(p.teams)}
 
 
 @router.post("/projects/{project_id}/penalty")
-async def apply_penalty(project_id: str, data: PenaltyApply, db: Session = Depends(get_db), _=Depends(require_api_key)):
+async def apply_penalty(project_id: str, data: PenaltyApply, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
     team = _get_or_404(db, Team, data.team_id)
     log = EventLog(
         team_id=team.id,
@@ -196,8 +204,8 @@ async def apply_penalty(project_id: str, data: PenaltyApply, db: Session = Depen
 
 
 @router.post("/projects/{project_id}/shuffle-routes")
-def shuffle_routes(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
-    p = _get_or_404(db, Project, project_id)
+def shuffle_routes(project_id: str, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    p = _get_or_404_owned(db, project_id, user)
     assign_routes(p, db)
     return {"ok": True, "routes": {t.name: t.route for t in p.teams}}
 
@@ -205,14 +213,14 @@ def shuffle_routes(project_id: str, db: Session = Depends(get_db), _=Depends(req
 # ─── Stations ─────────────────────────────────────────────────────────────────
 
 @router.get("/projects/{project_id}/stations")
-def list_stations(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+def list_stations(project_id: str, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
     stations = db.query(Station).filter_by(project_id=project_id).order_by(Station.order_index).all()
     return [_station_dict(s) for s in stations]
 
 
 @router.post("/projects/{project_id}/stations")
-def create_station(project_id: str, data: StationCreate, db: Session = Depends(get_db), _=Depends(require_api_key)):
-    _get_or_404(db, Project, project_id)
+def create_station(project_id: str, data: StationCreate, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    _get_or_404_owned(db, project_id, user)
     data_dict = data.dict()
     data_dict['answer'] = data.answer.upper().strip()
     s = Station(
@@ -226,7 +234,7 @@ def create_station(project_id: str, data: StationCreate, db: Session = Depends(g
 
 
 @router.patch("/projects/{project_id}/stations/{station_id}")
-def update_station(project_id: str, station_id: str, data: StationCreate, db: Session = Depends(get_db), _=Depends(require_api_key)):
+def update_station(project_id: str, station_id: str, data: StationCreate, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
     s = _get_or_404(db, Station, station_id)
     for field, value in data.dict().items():
         setattr(s, field, value)
@@ -236,7 +244,7 @@ def update_station(project_id: str, station_id: str, data: StationCreate, db: Se
 
 
 @router.delete("/projects/{project_id}/stations/{station_id}")
-def delete_station(project_id: str, station_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+def delete_station(project_id: str, station_id: str, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
     s = _get_or_404(db, Station, station_id)
     db.delete(s)
     db.commit()
@@ -246,14 +254,14 @@ def delete_station(project_id: str, station_id: str, db: Session = Depends(get_d
 # ─── Teams ────────────────────────────────────────────────────────────────────
 
 @router.get("/projects/{project_id}/teams")
-def list_teams(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+def list_teams(project_id: str, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
     teams = db.query(Team).filter_by(project_id=project_id).all()
     return [_team_dict(t) for t in teams]
 
 
 @router.post("/projects/{project_id}/teams")
-def create_team(project_id: str, data: TeamCreate, db: Session = Depends(get_db), _=Depends(require_api_key)):
-    _get_or_404(db, Project, project_id)
+def create_team(project_id: str, data: TeamCreate, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    _get_or_404_owned(db, project_id, user)
     t = Team(project_id=project_id, **data.dict())
     db.add(t)
     db.commit()
@@ -262,7 +270,7 @@ def create_team(project_id: str, data: TeamCreate, db: Session = Depends(get_db)
 
 
 @router.delete("/projects/{project_id}/teams/{team_id}")
-def delete_team(project_id: str, team_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+def delete_team(project_id: str, team_id: str, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
     t = _get_or_404(db, Team, team_id)
     db.delete(t)
     db.commit()
@@ -272,14 +280,14 @@ def delete_team(project_id: str, team_id: str, db: Session = Depends(get_db), _=
 # ─── Leaderboard + Logs ───────────────────────────────────────────────────────
 
 @router.get("/projects/{project_id}/leaderboard")
-def get_leaderboard(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
-    p = _get_or_404(db, Project, project_id)
+def get_leaderboard(project_id: str, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
+    p = _get_or_404_owned(db, project_id, user)
     teams = sorted(p.teams, key=lambda t: (-t.stages_done, t.penalty_mins))
     return [_team_dict(t, rank=i+1) for i, t in enumerate(teams)]
 
 
 @router.get("/projects/{project_id}/logs")
-def get_logs(project_id: str, db: Session = Depends(get_db), _=Depends(require_api_key)):
+def get_logs(project_id: str, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
     logs = (
         db.query(EventLog)
         .filter_by(project_id=project_id)
@@ -309,6 +317,16 @@ def _get_or_404(db, model, id):
     if not obj:
         raise HTTPException(404, f"{model.__name__} not found")
     return obj
+
+
+def _get_or_404_owned(db, project_id: str, user: str):
+    """Get a project, enforcing ownership. Legacy rows (user_id=None) are accessible to all."""
+    p = db.query(Project).filter_by(id=project_id).first()
+    if not p:
+        raise HTTPException(404, "Project not found")
+    if p.user_id is not None and p.user_id != user:
+        raise HTTPException(403, "You don't have access to this project")
+    return p
 
 
 def _project_dict(p: Project, detail=False):
