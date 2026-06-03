@@ -1,4 +1,4 @@
-const API = 'https://caretree-leader.onrender.com/api/admin';
+const API = '/api/admin';
 const API_KEY = 'change-this-to-a-secret-key'; // match your .env
 const HEADERS = { 'Content-Type': 'application/json', 'x-api-key': API_KEY };
 

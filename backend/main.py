@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 import os
 
@@ -31,10 +33,24 @@ app.include_router(webhook.router)
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(public.router, prefix="/api", tags=["public"])
 
+# ─── Serve frontend static files ─────────────────────────────────────────────
+frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
+
+app.mount(
+    "/static",
+    StaticFiles(directory=os.path.join(frontend_path, "static")),
+    name="static"
+)
+
 
 @app.get("/")
-def root():
-    return {"message": "Amazing Race API is running 🏁"}
+def admin_dashboard():
+    return FileResponse(os.path.join(frontend_path, "templates", "index.html"))
+
+
+@app.get("/live")
+def live_dashboard():
+    return FileResponse(os.path.join(frontend_path, "templates", "live.html"))
 
 
 @app.get("/health")

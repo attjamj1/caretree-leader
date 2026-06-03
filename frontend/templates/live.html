@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Leaderboard — Amazing Race</title>
-  <link rel="stylesheet" href="../static/css/style.css">
+  <link rel="stylesheet" href="/static/css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <style>
     body { background: var(--tan); }
@@ -238,7 +238,7 @@
 </div>
 
 <script>
-const API = 'https://caretree-leader.onrender.com/api/live';
+const API = '/api/live';
 let liveData = null;
 
 async function fetchData() {
