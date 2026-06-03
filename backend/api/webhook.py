@@ -13,17 +13,16 @@ async def whatsapp_webhook(
     From: str = Form(...),
     Body: str = Form(default=""),
     MediaUrl0: str = Form(default=None),
+    Latitude: str = Form(default=None),
+    Longitude: str = Form(default=None),
     db: Session = Depends(get_db),
 ):
-    """
-    Twilio sends a POST here for every incoming WhatsApp message.
-    Set this URL in Twilio console → Messaging → WhatsApp Sandbox settings.
-    URL: https://your-app.railway.app/webhook
-    """
     await handle_incoming(
         from_number=From,
         body=Body,
         media_url=MediaUrl0,
+        latitude=float(Latitude) if Latitude else None,
+        longitude=float(Longitude) if Longitude else None,
         db=db,
     )
     return ""

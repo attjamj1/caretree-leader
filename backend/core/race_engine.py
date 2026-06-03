@@ -1,3 +1,4 @@
+import math
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
@@ -12,12 +13,32 @@ from core import whatsapp as wa
 from models.models import EventLog, Team, Project
 
 
+# ─── Haversine helper ────────────────────────────────────────────────────────
+
+def _is_close_enough(
+    team_lat: float, team_lng: float,
+    target_lat: float, target_lng: float,
+    radius_meters: int = 50,
+) -> bool:
+    R = 6371000
+    lat1 = math.radians(team_lat)
+    lat2 = math.radians(target_lat)
+    dlat = math.radians(target_lat - team_lat)
+    dlng = math.radians(target_lng - team_lng)
+    a = (math.sin(dlat / 2) ** 2 +
+         math.cos(lat1) * math.cos(lat2) * math.sin(dlng / 2) ** 2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c <= radius_meters
+
+
 # ─── Entry point ─────────────────────────────────────────────────────────────
 
 async def handle_incoming(
     from_number: str,
     body: str,
     media_url: str | None,
+    latitude: float | None,
+    longitude: float | None,
     db: Session,
 ):
     """
@@ -30,6 +51,11 @@ async def handle_incoming(
 
     team = get_team_by_number(from_number, project.id, db)
     if not team:
+        return
+
+    # Handle GPS location submission
+    if latitude and longitude:
+        await _handle_location(team, project, latitude, longitude, db)
         return
 
     if team.status == "waiting":
@@ -62,6 +88,60 @@ async def handle_incoming(
         await _handle_photo(team, project, media_url, db)
     else:
         await _handle_answer(team, project, body_clean, db)
+
+
+# ─── GPS location ────────────────────────────────────────────────────────────
+
+async def _handle_location(team, project, lat: float, lng: float, db: Session):
+    station = get_next_station(team, db)
+    if not station or station.mission_type != "gps":
+        await wa.send_text(
+            team.group_number,
+            "📍 Location received! But this station doesn't need a location check."
+        )
+        return
+
+    if not station.gps_lat or not station.gps_lng:
+        await wa.send_text(
+            team.group_number,
+            "📍 Location received! Now send your text answer."
+        )
+        return
+
+    radius = getattr(station, 'gps_radius', None) or 50
+
+    if _is_close_enough(lat, lng, station.gps_lat, station.gps_lng, radius_meters=radius):
+        prog = get_or_create_progress(team, station, db)
+        prog.completed = True
+        prog.completed_at = datetime.now(timezone.utc)
+        db.commit()
+
+        _log(team, project, "correct", station.station_code,
+             f"Location verified at Station {station.station_code}", 0, 0, db)
+
+        next_station = get_next_station(team, db)
+        await wa.send_text(
+            team.group_number,
+            f"📍 *Location verified!* ✅\n"
+            f"You are at Station {station.station_code}!\n\n"
+            + ("Here comes your next mission 👇" if next_station else "🏁 All done!")
+        )
+        if next_station:
+            await wa.send_station(team.group_number, next_station, project)
+        else:
+            await _finish_team(team, project, db)
+    else:
+        _log(team, project, "wrong", station.station_code,
+             f"Wrong location at Station {station.station_code}",
+             -project.scoring_wrong_pts, project.scoring_wrong_time, db)
+
+        await wa.send_text(
+            team.group_number,
+            f"📍 *Wrong location!*\n"
+            f"You are not close enough to Station {station.station_code}.\n"
+            f"-{project.scoring_wrong_pts} pts · +{project.scoring_wrong_time} min penalty\n\n"
+            f"Keep looking! 🔍"
+        )
 
 
 # ─── Answer ───────────────────────────────────────────────────────────────────
