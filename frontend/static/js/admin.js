@@ -424,7 +424,7 @@ function buildGuideHTML() {
         <div style="text-align:center;padding:28px 0 16px;">
           <div style="font-size:42px;margin-bottom:10px;">🏁</div>
           <div style="font-family:var(--font-hand);font-size:28px;color:var(--dark);margin-bottom:6px;font-style:italic;">Race & Run!</div>
-          <div style="font-size:13px;color:var(--dark-mid);margin-bottom:20px;">WhatsApp Amazing Race — Operator Guide</div>
+          <div style="font-size:13px;color:var(--dark-mid);margin-bottom:20px;">WhatsApp Amazing Race — Race Master Guide</div>
           <div style="display:inline-block;background:var(--red);color:#fff;border-radius:6px;padding:8px 20px;font-size:12px;font-weight:600;">caretree-leader.onrender.com</div>
         </div>`
     },
@@ -434,7 +434,7 @@ function buildGuideHTML() {
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
           <div class="guide-card blue-card"><div class="guide-icon">📱</div><div class="guide-card-title">WhatsApp-native</div><p>Teams play entirely via WhatsApp. No app download, no login — just message the bot.</p></div>
           <div class="guide-card green-card"><div class="guide-icon">🗺️</div><div class="guide-card-title">Multi-station race</div><p>Set up stations around any venue. Each team gets a shuffled route so no two teams clash.</p></div>
-          <div class="guide-card yellow-card"><div class="guide-icon">📊</div><div class="guide-card-title">Live admin view</div><p>Monitor all teams in real time. Apply penalties, broadcast messages, view activity logs.</p></div>
+          <div class="guide-card yellow-card"><div class="guide-icon">📊</div><div class="guide-card-title">Live race view</div><p>Watch all players in real time. Send messages, apply penalties and view the activity feed.</p></div>
         </div>
         <div class="guide-info-box">You set up stations + teams → click Start → bot sends first mission to each team → teams race by replying with answers → leaderboard updates live.</div>`
     },
@@ -511,7 +511,7 @@ function buildGuideHTML() {
         <div class="guide-info-box">Tiebreaker: if two teams have equal points, the team with the faster finish time (minus penalty minutes) wins. All values are editable in the Scoring tab.</div>`
     },
     {
-      title: 'Operator Controls',
+      title: 'Race Master Controls',
       body: `
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
           <div class="guide-card"><div class="guide-icon">📢</div><div class="guide-card-title">Broadcast</div><p>Send a WhatsApp message to ALL teams at once — announcements, reminders, hints.</p><div class="guide-tag">Overview tab</div></div>
@@ -529,7 +529,7 @@ function buildGuideHTML() {
           <div class="guide-check done"><div class="guide-check-circle done">✓</div><span class="done-text">Backend deployed on Render — caretree-leader.onrender.com</span></div>
           <div class="guide-check done"><div class="guide-check-circle done">✓</div><span class="done-text">Twilio WhatsApp sandbox configured with webhook URL</span></div>
           <div class="guide-check"><div class="guide-check-circle"></div><span>All team leaders have sent 'join friend-married' to +14155238886</span></div>
-          <div class="guide-check"><div class="guide-check-circle"></div><span>Project created in admin dashboard with race name &amp; date</span></div>
+          <div class="guide-check"><div class="guide-check-circle"></div><span>Race created with a name &amp; date</span></div>
           <div class="guide-check"><div class="guide-check-circle"></div><span>All stations added with clues, answers and hints</span></div>
           <div class="guide-check"><div class="guide-check-circle"></div><span>All teams added with correct +65 WhatsApp numbers</span></div>
           <div class="guide-check"><div class="guide-check-circle"></div><span>Scoring rules reviewed in Scoring tab</span></div>
@@ -545,7 +545,7 @@ function buildGuideHTML() {
           <div style="font-family:var(--font-hand);font-size:22px;font-style:italic;color:var(--dark);margin-bottom:8px;">Click Start race and go!</div>
           <div style="font-size:12px;color:var(--dark-mid);margin-bottom:20px;max-width:320px;margin-left:auto;margin-right:auto;line-height:1.6;">The bot takes it from here. Good luck and have fun!</div>
           <div style="display:flex;gap:10px;justify-content:center;">
-            <a href="/" style="background:var(--red);color:#fff;border-radius:6px;padding:9px 18px;font-size:12px;font-weight:600;text-decoration:none;">Admin dashboard</a>
+            <a href="/" style="background:var(--red);color:#fff;border-radius:6px;padding:9px 18px;font-size:12px;font-weight:600;text-decoration:none;">Race dashboard</a>
             <a href="/live" target="_blank" style="background:var(--dark);color:var(--cream);border-radius:6px;padding:9px 18px;font-size:12px;font-weight:600;text-decoration:none;">Live leaderboard ↗</a>
           </div>
         </div>`
@@ -575,7 +575,7 @@ function _oldRenderGuide_unused() {
   const slides = [
     {
       title: 'Race & Run!',
-      subtitle: 'WhatsApp Amazing Race — Operator Guide',
+      subtitle: 'WhatsApp Amazing Race — Race Master Guide',
       body: `<div></div>`
     },
     {
@@ -584,12 +584,12 @@ function _oldRenderGuide_unused() {
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
           <div class="guide-card blue-card"><div class="guide-icon">📱</div><div class="guide-card-title">WhatsApp-native</div><p>Teams play entirely via WhatsApp. No app download, no login — just message the bot.</p></div>
           <div class="guide-card green-card"><div class="guide-icon">🗺️</div><div class="guide-card-title">Multi-station race</div><p>Set up stations around any venue. Each team gets a shuffled route so no two teams clash.</p></div>
-          <div class="guide-card yellow-card"><div class="guide-icon">📊</div><div class="guide-card-title">Live admin view</div><p>Monitor all teams in real time. Apply penalties, broadcast messages, view activity logs.</p></div>
+          <div class="guide-card yellow-card"><div class="guide-icon">📊</div><div class="guide-card-title">Live race view</div><p>Watch all players in real time. Send messages, apply penalties and view the activity feed.</p></div>
         </div>
         <div class="guide-info-box">You set up stations + teams → click Start → bot sends first mission to each team → teams race by replying with answers → leaderboard updates live.</div>`
     },
     {
-      title: 'Admin Dashboard — Getting Started',
+      title: 'Getting Started',
       body: `
         <div class="guide-url-box">https://caretree-leader.onrender.com</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
@@ -661,7 +661,7 @@ function _oldRenderGuide_unused() {
         <div class="guide-info-box">Tiebreaker: if two teams have equal points, the team with the faster finish time (minus penalty minutes) wins. All values are editable in the Scoring tab.</div>`
     },
     {
-      title: 'Operator Controls During Race',
+      title: 'Race Master Controls',
       body: `
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
           <div class="guide-card"><div class="guide-icon">📢</div><div class="guide-card-title">Broadcast message</div><p>Send a WhatsApp message to ALL teams at once — announcements, reminders, hints.</p><div class="guide-tag">Overview tab</div></div>
@@ -715,7 +715,7 @@ function _oldRenderGuide_unused() {
           <div class="guide-check done"><div class="guide-check-circle done">✓</div><span class="done-text">Backend deployed on Render — caretree-leader.onrender.com</span></div>
           <div class="guide-check done"><div class="guide-check-circle done">✓</div><span class="done-text">Twilio WhatsApp sandbox configured with webhook URL</span></div>
           <div class="guide-check"><div class="guide-check-circle"></div><span>All team leaders have sent 'join friend-married' to +14155238886</span></div>
-          <div class="guide-check"><div class="guide-check-circle"></div><span>Project created in admin dashboard with race name &amp; date</span></div>
+          <div class="guide-check"><div class="guide-check-circle"></div><span>Race created with a name &amp; date</span></div>
           <div class="guide-check"><div class="guide-check-circle"></div><span>All stations added with clues, answers and hints</span></div>
           <div class="guide-check"><div class="guide-check-circle"></div><span>All teams added with correct +65 WhatsApp numbers</span></div>
           <div class="guide-check"><div class="guide-check-circle"></div><span>Scoring rules reviewed in Scoring tab</span></div>
@@ -731,7 +731,7 @@ function _oldRenderGuide_unused() {
           <div style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:8px;">Click Start race and go!</div>
           <div style="font-size:12px;color:var(--dark-mid);margin-bottom:20px;max-width:340px;margin-left:auto;margin-right:auto;line-height:1.6;">The bot takes it from here. Good luck and have fun!</div>
           <div style="display:flex;gap:10px;justify-content:center;">
-            <a href="/" style="background:var(--red);color:#fff;border-radius:6px;padding:9px 18px;font-size:12px;font-weight:700;text-decoration:none;">Admin dashboard</a>
+            <a href="/" style="background:var(--red);color:#fff;border-radius:6px;padding:9px 18px;font-size:12px;font-weight:700;text-decoration:none;">Race dashboard</a>
             <a href="/live" target="_blank" style="background:var(--dark);color:var(--cream);border-radius:6px;padding:9px 18px;font-size:12px;font-weight:700;text-decoration:none;">Live leaderboard ↗</a>
           </div>
         </div>`
@@ -748,7 +748,7 @@ function _oldRenderGuide_unused() {
       </div>
       <div class="guide-slide-body">${s.body}</div>
       <div class="guide-slide-footer">
-        <span>Race & Run — Operator Guide</span>
+        <span>Race & Run — Guide</span>
         <span>Slide ${i+1} / ${total}</span>
         <span>© Lim Jamie Claire</span>
       </div>

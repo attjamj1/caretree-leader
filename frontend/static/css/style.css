@@ -347,6 +347,7 @@ body {
 input[type=text],
 input[type=number],
 input[type=date],
+input[type=password],
 select,
 textarea {
   width: 100%;
@@ -735,6 +736,8 @@ tbody tr:hover td { background: var(--cream-dark); }
   padding: 8px 12px;
 }
 .auth-submit {
+  display: flex;
+  justify-content: center;
   width: 100%;
   margin-top: 4px;
   padding: 12px;
@@ -758,7 +761,12 @@ tbody tr:hover td { background: var(--cream-dark); }
 
 @media (max-width: 640px) {
   .auth-left { display: none; }
-  .auth-right { padding: 40px 24px; }
+  .auth-right {
+    padding: 40px 24px;
+    width: 100%;
+    min-height: 100vh;
+  }
+  .auth-form-wrap { max-width: 100%; }
 }
 
 /* ─── Responsive ──────────────────────────────────────────────────────────── */

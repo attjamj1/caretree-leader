@@ -29,11 +29,12 @@ class Project(Base):
     __tablename__ = "projects"
 
     id          = Column(String, primary_key=True, default=gen_id)
-    user_id     = Column(String, nullable=True)   # username of the owner; nullable for legacy rows
+    user_id     = Column(String, nullable=True)
     name        = Column(String, nullable=False)
     org         = Column(String, default="")
     event_date  = Column(String, default="")
     status      = Column(String, default="draft")  # draft | live | done
+    live_token  = Column(String, nullable=True)    # unique token for /live/<token>
     created_at  = Column(DateTime, server_default=func.now())
 
     teams    = relationship("Team",    back_populates="project", cascade="all, delete")
