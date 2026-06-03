@@ -84,7 +84,7 @@ class PenaltyApply(BaseModel):
 def list_projects(db: Session = Depends(get_db), user: str = Depends(require_api_key)):
     projects = (
         db.query(Project)
-        .filter((Project.user_id == user) | (Project.user_id == None))
+        .filter(Project.user_id == user)
         .order_by(Project.created_at.desc())
         .all()
     )
