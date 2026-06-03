@@ -1,4 +1,4 @@
-from fuzzywuzzy import fuzz
+from rapidfuzz import fuzz
 
 
 FUZZY_THRESHOLD = 85  # % match required (0-100)

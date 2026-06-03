@@ -6,8 +6,7 @@ alembic==1.13.1
 python-dotenv==1.0.1
 cloudinary==1.40.0
 python-multipart==0.0.9
-fuzzywuzzy==0.18.0
-python-Levenshtein==0.25.1
+rapidfuzz==3.9.3
 psycopg2-binary==2.9.9
 passlib==1.7.4
 python-jose==3.3.0
