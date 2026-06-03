@@ -117,6 +117,7 @@ function renderContent(p) {
       <button class="tab-btn" onclick="showTab('teams', this)">Teams</button>
       <button class="tab-btn" onclick="showTab('scoring', this)">Scoring</button>
       <button class="tab-btn" onclick="showTab('logs', this)">Activity log</button>
+      <button class="tab-btn" onclick="showTab('guide', this)">📖 Guide</button>
     </div>
     <div id="tab-overview" class="tab-pane active">${renderOverview(p)}</div>
     <div id="tab-stations" class="tab-pane">${renderStations(p)}</div>
@@ -124,6 +125,7 @@ function renderContent(p) {
     <div id="tab-teams" class="tab-pane">${renderTeams(p)}</div>
     <div id="tab-scoring" class="tab-pane">${renderScoring(p)}</div>
     <div id="tab-logs" class="tab-pane"><div id="logs-content">Loading...</div></div>
+    <div id="tab-guide" class="tab-pane">${renderGuide()}</div>
   `;
   updateFormula();
 }
@@ -348,6 +350,231 @@ function renderTeams(p) {
 }
 
 // ─── Scoring ───────────────────────────────────────────────────────────────
+
+function renderGuide() {
+  const slides = [
+    {
+      title: 'Race & Run!',
+      subtitle: 'WhatsApp Amazing Race — Operator Guide',
+      body: `
+        <div style="text-align:center;padding:32px 0 16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--blue-stripe);text-transform:uppercase;margin-bottom:12px;">PSA Singapore · CSRD</div>
+          <div style="font-size:30px;font-weight:800;color:var(--cream);line-height:1.2;margin-bottom:8px;">Race & Run!</div>
+          <div style="font-size:13px;color:var(--tan);margin-bottom:20px;">WhatsApp Amazing Race — Operator Guide</div>
+          <div style="display:inline-block;background:var(--red);color:#fff;border-radius:6px;padding:8px 20px;font-size:12px;font-weight:700;">caretree-leader.onrender.com</div>
+        </div>`
+    },
+    {
+      title: 'What is Race & Run?',
+      body: `
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="guide-card blue-card"><div class="guide-icon">📱</div><div class="guide-card-title">WhatsApp-native</div><p>Teams play entirely via WhatsApp. No app download, no login — just message the bot.</p></div>
+          <div class="guide-card green-card"><div class="guide-icon">🗺️</div><div class="guide-card-title">Multi-station race</div><p>Set up stations around any venue. Each team gets a shuffled route so no two teams clash.</p></div>
+          <div class="guide-card yellow-card"><div class="guide-icon">📊</div><div class="guide-card-title">Live admin view</div><p>Monitor all teams in real time. Apply penalties, broadcast messages, view activity logs.</p></div>
+        </div>
+        <div class="guide-info-box">You set up stations + teams → click Start → bot sends first mission to each team → teams race by replying with answers → leaderboard updates live.</div>`
+    },
+    {
+      title: 'Admin Dashboard — Getting Started',
+      body: `
+        <div class="guide-url-box">https://caretree-leader.onrender.com</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+          <div class="guide-card"><div class="guide-num">1</div><div class="guide-card-title">Create a Project</div><p>Click "+ New project" in the left sidebar. Enter race name, organisation, date and number of teams.</p></div>
+          <div class="guide-card"><div class="guide-num">2</div><div class="guide-card-title">Add Stations</div><p>Go to Stations tab → Add station. Set ID, name, mission type, clue, correct answer and hint.</p></div>
+          <div class="guide-card"><div class="guide-num">3</div><div class="guide-card-title">Add Teams</div><p>Go to Teams tab → Add team. Enter team name, leader name and WhatsApp number e.g. +6590687455</p></div>
+          <div class="guide-card"><div class="guide-num">4</div><div class="guide-card-title">Start the Race</div><p>Click "Start race" at top right. Routes auto-shuffle and first mission is sent to all teams instantly!</p></div>
+        </div>`
+    },
+    {
+      title: 'Station Mission Types',
+      body: `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="guide-card" style="border-top:3px solid var(--blue-stripe);background:#f0f6fa;">
+            <div class="guide-card-title" style="color:#1a5a8a;">📝 Text clue</div>
+            <p>Bot sends a text clue. Team reads it, finds the answer and types it back.</p>
+            <p style="font-style:italic;font-size:11px;margin-top:6px;color:var(--tan-dark);">e.g. "What year is inscribed on the heritage wall near Gate 3?"</p>
+          </div>
+          <div class="guide-card" style="border-top:3px solid var(--green);background:var(--green-light);">
+            <div class="guide-card-title" style="color:var(--green);">🖼️ Image clue</div>
+            <p>Bot sends a photo. Team identifies what's in the image and replies.</p>
+            <p style="font-style:italic;font-size:11px;margin-top:6px;color:var(--tan-dark);">e.g. Photo of a landmark — team types the name</p>
+          </div>
+          <div class="guide-card" style="border-top:3px solid var(--yellow);background:var(--yellow-light);">
+            <div class="guide-card-title" style="color:#7a6010;">📍 GPS location</div>
+            <p>Bot sends a location pin. Team walks there and sends their live location.</p>
+            <p style="font-style:italic;font-size:11px;margin-top:6px;color:var(--tan-dark);">e.g. Navigate to 1.2647°N, 103.8220°E — verified within 50m</p>
+          </div>
+          <div class="guide-card" style="border-top:3px solid #D4A0C0;background:#faf0f6;">
+            <div class="guide-card-title" style="color:#6a1a8a;">🎥 Video clue</div>
+            <p>Bot sends a video. Team watches and answers based on what they saw.</p>
+            <p style="font-style:italic;font-size:11px;margin-top:6px;color:var(--tan-dark);">e.g. Short clip of a location — team identifies it</p>
+          </div>
+        </div>
+        <p style="font-size:10px;color:var(--tan-dark);margin-top:8px;font-style:italic;">📸 Photo required toggle: any station type can also require a team selfie before answering</p>`
+    },
+    {
+      title: 'WhatsApp — How Teams Play',
+      body: `
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;">
+          <div style="background:#e8f5e9;border-radius:8px;padding:12px;font-size:11px;">
+            <div style="font-size:9px;font-weight:700;color:var(--tan-dark);margin-bottom:4px;">BOT</div>
+            <div class="guide-chat-msg">🏁 Harbour Chronicles has begun!<br><br>Team HabisBalik, here is your first mission:<br><br><strong>Station C — Waterfront Landmark</strong><br>Identify the landmark shown in the photo.<br><br>Reply with your answer.<br>Type /hint for a clue (-5 pts)<br>Type /answer to reveal it (-20 pts)</div>
+            <div class="guide-chat-reply">maritime singapore</div>
+            <div class="guide-chat-msg">✅ Correct! Station C cleared!<br>Stages done: 1 / 5<br><br>Here comes your next mission 👇</div>
+            <div class="guide-chat-reply">/hint</div>
+            <div class="guide-chat-msg">💡 Hint for Station A (-5 pts deducted)<br><br>It starts with G and is above eye level.</div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:8px;">Team commands</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;align-items:center;gap:8px;"><span style="background:var(--red);color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;min-width:80px;text-align:center;">/hint</span><span style="font-size:11px;">Get a hint (-5 pts)</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="background:var(--red);color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;min-width:80px;text-align:center;">/answer</span><span style="font-size:11px;">Reveal answer (-20 pts)</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="background:var(--red);color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;min-width:80px;text-align:center;">/status</span><span style="font-size:11px;">See your current score</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="background:var(--red);color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;min-width:80px;text-align:center;">/leaderboard</span><span style="font-size:11px;">See live rankings</span></div>
+            </div>
+            <div style="margin-top:12px;background:var(--green-light);border:1px solid var(--green);border-radius:7px;padding:10px 12px;font-size:10px;color:#2a6b3a;line-height:1.5;"><strong>Teams never need to install anything.</strong> Just WhatsApp — they text the bot like a normal chat.</div>
+          </div>
+        </div>`
+    },
+    {
+      title: 'Scoring System',
+      body: `
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="guide-card green-card" style="text-align:center;"><div style="font-size:24px;font-weight:800;color:var(--green);">+100</div><div class="guide-card-title">Per station cleared</div><p>Base points awarded for completing each station correctly.</p></div>
+          <div class="guide-card" style="border-top:3px solid var(--red);text-align:center;"><div style="font-size:24px;font-weight:800;color:var(--red);">-10</div><div class="guide-card-title">Wrong answer</div><p>Each incorrect attempt deducts points and adds +5 min time penalty.</p></div>
+          <div class="guide-card yellow-card" style="text-align:center;"><div style="font-size:24px;font-weight:800;color:#7a6010;">-5 / -20</div><div class="guide-card-title">Hint / Reveal</div><p>/hint costs 5 pts. Revealing the full answer costs 20 pts.</p></div>
+        </div>
+        <div class="guide-info-box">Tiebreaker: if two teams have equal points, the team with the faster finish time (minus penalty minutes) wins. All values are editable in the Scoring tab.</div>`
+    },
+    {
+      title: 'Operator Controls During Race',
+      body: `
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <div class="guide-card"><div class="guide-icon">📢</div><div class="guide-card-title">Broadcast message</div><p>Send a WhatsApp message to ALL teams at once — announcements, reminders, hints.</p><div class="guide-tag">Overview tab</div></div>
+          <div class="guide-card"><div class="guide-icon">⚠️</div><div class="guide-card-title">Manual penalty</div><p>Apply a custom point deduction or time addition to any team for rule violations.</p><div class="guide-tag">Overview tab</div></div>
+          <div class="guide-card"><div class="guide-icon">🔀</div><div class="guide-card-title">Shuffle routes</div><p>Randomise station order for all teams so no two teams visit the same spot at once.</p><div class="guide-tag">Routes tab</div></div>
+          <div class="guide-card"><div class="guide-icon">📋</div><div class="guide-card-title">Activity log</div><p>Filter and view every event — correct answers, wrong attempts, hints, penalties — live.</p><div class="guide-tag">Activity log tab</div></div>
+          <div class="guide-card"><div class="guide-icon">🏁</div><div class="guide-card-title">End race</div><p>Lock all scores, mark remaining teams as finished, trigger final leaderboard.</p><div class="guide-tag">Top right button</div></div>
+          <div class="guide-card"><div class="guide-icon">🌐</div><div class="guide-card-title">Live view</div><p>Share the public leaderboard URL with spectators — updates every 30 seconds.</p><div class="guide-tag">/live link</div></div>
+        </div>`
+    },
+    {
+      title: 'Live Leaderboard',
+      body: `
+        <div class="guide-url-box">https://caretree-leader.onrender.com/live</div>
+        <div style="background:#fff;border:1px solid var(--tan);border-radius:8px;overflow:hidden;margin-top:10px;">
+          <div style="background:var(--dark);display:grid;grid-template-columns:28px 2fr 1fr 1fr 1.5fr;padding:7px 12px;gap:8px;">
+            <div style="font-size:10px;font-weight:700;color:var(--tan);text-transform:uppercase;">#</div>
+            <div style="font-size:10px;font-weight:700;color:var(--tan);text-transform:uppercase;">Team</div>
+            <div style="font-size:10px;font-weight:700;color:var(--tan);text-transform:uppercase;">Score</div>
+            <div style="font-size:10px;font-weight:700;color:var(--tan);text-transform:uppercase;">Stations</div>
+            <div style="font-size:10px;font-weight:700;color:var(--tan);text-transform:uppercase;">Progress</div>
+          </div>
+          <div style="background:var(--yellow-light);display:grid;grid-template-columns:28px 2fr 1fr 1fr 1.5fr;padding:8px 12px;gap:8px;align-items:center;border-bottom:1px solid #f0e8d8;">
+            <div style="font-size:13px;font-weight:700;color:var(--red);">1</div>
+            <div style="font-size:12px;font-weight:700;">Chope Liao 🏁</div>
+            <div style="font-size:12px;font-weight:700;">520</div>
+            <div style="font-size:11px;">8 / 8</div>
+            <div style="background:#e0ddd0;border-radius:4px;height:6px;"><div style="height:6px;border-radius:4px;background:var(--red);width:100%"></div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:28px 2fr 1fr 1fr 1.5fr;padding:8px 12px;gap:8px;align-items:center;border-bottom:1px solid #f0e8d8;">
+            <div style="font-size:13px;font-weight:700;color:var(--dark-mid);">2</div>
+            <div style="font-size:12px;">Team Kopi</div>
+            <div style="font-size:12px;">410</div>
+            <div style="font-size:11px;">6 / 8</div>
+            <div style="background:#e0ddd0;border-radius:4px;height:6px;"><div style="height:6px;border-radius:4px;background:var(--dark-mid);width:75%"></div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:28px 2fr 1fr 1fr 1.5fr;padding:8px 12px;gap:8px;align-items:center;">
+            <div style="font-size:13px;font-weight:700;color:var(--dark-mid);">3</div>
+            <div style="font-size:12px;">HabisBalik</div>
+            <div style="font-size:12px;">380</div>
+            <div style="font-size:11px;">5 / 8</div>
+            <div style="background:#e0ddd0;border-radius:4px;height:6px;"><div style="height:6px;border-radius:4px;background:var(--tan);width:63%"></div></div>
+          </div>
+        </div>
+        <p style="font-size:10px;color:var(--tan-dark);margin-top:7px;text-align:center;font-style:italic;">Auto-refreshes every 30 seconds · No login required · Share freely with spectators</p>`
+    },
+    {
+      title: 'Pre-Race Setup Checklist',
+      body: `
+        <div style="background:#fff;border:1px solid var(--tan);border-radius:8px;padding:6px 14px;">
+          <div class="guide-check done"><div class="guide-check-circle done">✓</div><span class="done-text">Backend deployed on Render — caretree-leader.onrender.com</span></div>
+          <div class="guide-check done"><div class="guide-check-circle done">✓</div><span class="done-text">Twilio WhatsApp sandbox configured with webhook URL</span></div>
+          <div class="guide-check"><div class="guide-check-circle"></div><span>All team leaders have sent 'join friend-married' to +14155238886</span></div>
+          <div class="guide-check"><div class="guide-check-circle"></div><span>Project created in admin dashboard with race name &amp; date</span></div>
+          <div class="guide-check"><div class="guide-check-circle"></div><span>All stations added with clues, answers and hints</span></div>
+          <div class="guide-check"><div class="guide-check-circle"></div><span>All teams added with correct +65 WhatsApp numbers</span></div>
+          <div class="guide-check"><div class="guide-check-circle"></div><span>Scoring rules reviewed in Scoring tab</span></div>
+          <div class="guide-check"><div class="guide-check-circle"></div><span>Live leaderboard URL shared with spectators: /live</span></div>
+          <div class="guide-check" style="border-bottom:none;"><div class="guide-check-circle"></div><span>Test run done with one team before the actual event</span></div>
+        </div>`
+    },
+    {
+      title: "You're ready to race! 🏁",
+      body: `
+        <div style="text-align:center;padding:24px 0;">
+          <div style="font-size:48px;margin-bottom:14px;">🏁</div>
+          <div style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:8px;">Click Start race and go!</div>
+          <div style="font-size:12px;color:var(--dark-mid);margin-bottom:20px;max-width:340px;margin-left:auto;margin-right:auto;line-height:1.6;">The bot takes it from here. Good luck and have fun!</div>
+          <div style="display:flex;gap:10px;justify-content:center;">
+            <a href="/" style="background:var(--red);color:#fff;border-radius:6px;padding:9px 18px;font-size:12px;font-weight:700;text-decoration:none;">Admin dashboard</a>
+            <a href="/live" target="_blank" style="background:var(--dark);color:var(--cream);border-radius:6px;padding:9px 18px;font-size:12px;font-weight:700;text-decoration:none;">Live leaderboard ↗</a>
+          </div>
+        </div>`
+    }
+  ];
+
+  const total = slides.length;
+  const slidesHtml = slides.map((s, i) => `
+    <div class="guide-slide ${i === 0 ? 'active' : ''}" id="gslide-${i}">
+      <div class="guide-slide-stripe"></div>
+      <div class="guide-slide-header">
+        <div class="guide-slide-title">${s.title}</div>
+        ${s.subtitle ? `<div class="guide-slide-sub">${s.subtitle}</div>` : ''}
+      </div>
+      <div class="guide-slide-body">${s.body}</div>
+      <div class="guide-slide-footer">
+        <span>Race & Run — Operator Guide</span>
+        <span>Slide ${i+1} / ${total}</span>
+        <span>© Lim Jamie Claire</span>
+      </div>
+    </div>
+  `).join('');
+
+  const dotsHtml = slides.map((_, i) => `<span class="guide-dot ${i===0?'active':''}" onclick="guideGoTo(${i})"></span>`).join('');
+
+  return `
+    <div class="guide-wrapper">
+      <div class="guide-nav">
+        <button class="btn btn-sm" id="guide-prev" onclick="guideChange(-1)" disabled>← Prev</button>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+          <div class="guide-dots">${dotsHtml}</div>
+          <span id="guide-count" style="font-size:11px;color:var(--tan-dark);font-weight:600;">Slide 1 / ${total}</span>
+        </div>
+        <button class="btn btn-sm" id="guide-next" onclick="guideChange(1)">Next →</button>
+      </div>
+      <div class="guide-deck">${slidesHtml}</div>
+    </div>`;
+}
+
+let guideCur = 0;
+function guideGoTo(n) {
+  const slides = document.querySelectorAll('.guide-slide');
+  const dots = document.querySelectorAll('.guide-dot');
+  if (!slides.length) return;
+  slides[guideCur].classList.remove('active');
+  dots[guideCur].classList.remove('active');
+  guideCur = n;
+  slides[guideCur].classList.add('active');
+  dots[guideCur].classList.add('active');
+  document.getElementById('guide-count').textContent = `Slide ${guideCur+1} / ${slides.length}`;
+  document.getElementById('guide-prev').disabled = guideCur === 0;
+  document.getElementById('guide-next').disabled = guideCur === slides.length - 1;
+}
+function guideChange(dir) {
+  const slides = document.querySelectorAll('.guide-slide');
+  guideGoTo(Math.max(0, Math.min(slides.length - 1, guideCur + dir)));
+}
 
 function renderScoring(p) {
   const s = p.scoring || {};
