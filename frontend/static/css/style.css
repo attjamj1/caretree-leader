@@ -844,8 +844,9 @@ tbody tr:hover td { background: var(--cream-dark); }
     grid-template-columns: 1fr;
   }
   .topbar {
-    padding: 0 12px;
+    padding: 0 10px;
     height: 54px;
+    overflow: hidden;
   }
   .shell {
     height: calc(100vh - 54px);
@@ -853,12 +854,31 @@ tbody tr:hover td { background: var(--cream-dark); }
   .topbar-logo {
     font-size: 18px;
   }
-  /* Hide guide button on mobile to save space */
-  .btn-guide {
-    display: none !important;
-  }
+  .btn-guide { display: none !important; }
+
   .topbar-right {
-    gap: 6px;
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+
+  /* Compact all topbar buttons on mobile */
+  .topbar-right .btn,
+  .topbar-right .btn-sm {
+    font-size: 11px;
+    padding: 4px 8px;
+    gap: 3px;
+    white-space: nowrap;
+  }
+
+  /* Badge pill */
+  .topbar-right .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  /* Hide button text, keep icon for Live view and Sign out on very small screens */
+  @media (max-width: 420px) {
+    #live-btn span, #start-btn span { display: none; }
   }
   /* Tab bar scrollable on mobile */
   .tab-bar {
