@@ -209,10 +209,11 @@ def list_stations(project_id: str, db: Session = Depends(get_db), _=Depends(requ
 @router.post("/projects/{project_id}/stations")
 def create_station(project_id: str, data: StationCreate, db: Session = Depends(get_db), _=Depends(require_api_key)):
     _get_or_404(db, Project, project_id)
+    data_dict = data.dict()
+    data_dict['answer'] = data.answer.upper().strip()
     s = Station(
         project_id=project_id,
-        **data.dict(),
-        answer=data.answer.upper().strip()
+        **data_dict
     )
     db.add(s)
     db.commit()
