@@ -103,7 +103,7 @@ async function toggleRace() {
 }
 
 function openLive() {
-  window.open('../templates/live.html', '_blank');
+  window.open('/live', '_blank');
 }
 
 // ─── Main content ──────────────────────────────────────────────────────────
