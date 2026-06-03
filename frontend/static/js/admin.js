@@ -915,25 +915,27 @@ function updateTypeHint() {
     gps: 'Bot sends a GPS pin. Team walks there and sends their live location — no text answer needed.',
   };
   document.getElementById('s-type-hint').textContent = hints[type] || '';
-  // Image stations: team submits photo, no media URL or answer needed
-  document.getElementById('s-media-group').style.display = 'none';
-  const isImage = type === 'image';
-  if (isImage) {
-    document.getElementById('s-answer').closest('.form-group').style.display = 'none';
-    document.getElementById('s-answer-cost').closest('.form-group').style.display = 'none';
-    document.getElementById('s-answer').value = '__image__';
-  } else if (!isGps) {
-    document.getElementById('s-answer').closest('.form-group').style.display = '';
-    document.getElementById('s-answer-cost').closest('.form-group').style.display = '';
-  }
-  document.getElementById('s-gps-group').style.display =
-    type === 'gps' ? '' : 'none';
 
-  // GPS stations don't need a text answer — hide those fields
-  const isGps = type === 'gps';
-  document.getElementById('s-answer').closest('.form-group').style.display = isGps ? 'none' : '';
-  document.getElementById('s-answer-cost').closest('.form-group').style.display = isGps ? 'none' : '';
-  if (isGps) document.getElementById('s-answer').value = '__gps__';
+  const isGps   = type === 'gps';
+  const isImage = type === 'image';
+  const needsAnswer = !isGps && !isImage;
+
+  // Media URL field — not needed for any type now
+  document.getElementById('s-media-group').style.display = 'none';
+
+  // GPS coordinate fields
+  document.getElementById('s-gps-group').style.display = isGps ? '' : 'none';
+
+  // Answer + reveal cost — only for text stations
+  document.getElementById('s-answer').closest('.form-group').style.display = needsAnswer ? '' : 'none';
+  document.getElementById('s-answer-cost').closest('.form-group').style.display = needsAnswer ? '' : 'none';
+
+  // Auto-fill placeholder answers for non-text types
+  if (isGps)   document.getElementById('s-answer').value = '__gps__';
+  if (isImage) document.getElementById('s-answer').value = '__image__';
+  if (needsAnswer && document.getElementById('s-answer').value.startsWith('__')) {
+    document.getElementById('s-answer').value = '';
+  }
 }
 
 async function saveStation() {
