@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Leaderboard — Amazing Race</title>
+  <title>Live Leaderboard — Race & Run!</title>
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     body { background: var(--tan); }
     .live-shell {
@@ -175,10 +178,38 @@
       color: var(--tan-dark);
       margin-top: 12px;
     }
-    @media (max-width: 600px) {
-      .live-stats { grid-template-columns: repeat(2,1fr); }
-      .rank-row { grid-template-columns: 36px 1fr 70px 50px; }
-      .tc-body-live { grid-template-columns: repeat(2,1fr); }
+    @media (max-width: 700px) {
+      .live-shell { padding: 12px 10px 32px; }
+      .live-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 14px 16px;
+      }
+      .live-dot-wrap { align-items: flex-start; }
+      .live-title { font-size: 22px; }
+      .live-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .live-stat-val { font-size: 24px; }
+      .tab-bar { padding: 0 8px; overflow-x: auto; white-space: nowrap; }
+      .tab-bar::-webkit-scrollbar { display: none; }
+      .tab-btn { font-size: 12px; padding: 8px 10px; }
+      .rank-row {
+        grid-template-columns: 36px 1fr 70px 50px;
+        font-size: 12px;
+        padding: 10px 6px;
+      }
+      /* Hide penalty and hints columns on mobile */
+      .rank-row > *:nth-child(5),
+      .rank-row > *:nth-child(6) { display: none; }
+      .tc-body-live { grid-template-columns: repeat(2, 1fr); }
+      .tc-name-live { font-size: 16px; }
+      .station-map-row {
+        grid-template-columns: 100px repeat(2, 1fr);
+        font-size: 11px;
+      }
+      /* Hide extra team columns on mobile */
+      .station-map-row > *:nth-child(n+4) { display: none; }
+      .board-wrap { padding: 10px; }
     }
   </style>
 </head>

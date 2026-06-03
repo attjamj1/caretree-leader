@@ -65,7 +65,10 @@
 
 <!-- ─── Topbar ─────────────────────────────────────────────────────────────── -->
 <header class="topbar">
-  <div class="topbar-logo">race <span>&</span> run!</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+    <div class="topbar-logo">race <span>&</span> run!</div>
+  </div>
   <div class="topbar-right">
     <span id="race-badge" class="badge badge-draft" style="display:none"></span>
     <button class="btn btn-green btn-sm" id="start-btn" style="display:none" onclick="toggleRace()">
@@ -83,10 +86,11 @@
   </div>
 </header>
 
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <div class="shell">
 
 <!-- ─── Sidebar ───────────────────────────────────────────────────────────── -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-section">Projects</div>
   <div id="proj-list"></div>
   <button class="new-proj-btn" onclick="openModal('modal-newproj')">
@@ -304,6 +308,12 @@
   </div>
 </div>
 
+<script>
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+</script>
 <script src="/static/js/admin.js"></script>
 
 <footer class="site-footer">

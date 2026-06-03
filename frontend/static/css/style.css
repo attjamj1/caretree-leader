@@ -770,10 +770,144 @@ tbody tr:hover td { background: var(--cream-dark); }
 }
 
 /* ─── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .sidebar { display: none; }
-  .metrics { grid-template-columns: repeat(2, 1fr); }
-  .grid2, .grid3 { grid-template-columns: 1fr; }
+
+/* Tablet — 480px to 900px */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 180px;
+  }
+  .metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .grid3 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .topbar {
+    padding: 0 16px;
+  }
+  .topbar-right {
+    gap: 6px;
+  }
+  .btn-sm {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+  .main {
+    padding: 16px;
+  }
+}
+
+/* Mobile — under 600px */
+@media (max-width: 600px) {
+  /* Hide sidebar, show toggle button instead */
+  .sidebar {
+    position: fixed;
+    left: -240px;
+    top: 60px;
+    height: calc(100vh - 60px);
+    width: 240px;
+    z-index: 200;
+    transition: left .25s ease;
+    box-shadow: 4px 0 20px rgba(0,0,0,.12);
+  }
+  .sidebar.open {
+    left: 0;
+  }
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 60px 0 0 0;
+    background: rgba(0,0,0,.3);
+    z-index: 199;
+  }
+  .sidebar-overlay.open {
+    display: block;
+  }
+  .shell {
+    height: calc(100vh - 60px);
+  }
+  .main {
+    padding: 12px;
+    width: 100%;
+  }
+  .metrics {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .metric-val {
+    font-size: 22px;
+  }
+  .grid2, .grid3 {
+    grid-template-columns: 1fr;
+  }
+  .topbar {
+    padding: 0 12px;
+    height: 54px;
+  }
+  .shell {
+    height: calc(100vh - 54px);
+  }
+  .topbar-logo {
+    font-size: 18px;
+  }
+  /* Hide less important topbar buttons on mobile */
+  #live-btn, .btn-guide {
+    display: none !important;
+  }
+  .topbar-right {
+    gap: 6px;
+  }
+  /* Tab bar scrollable on mobile */
+  .tab-bar {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    display: inline-block;
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+  /* Tables scroll horizontally */
+  .tbl-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Modal full-width on mobile */
+  .modal {
+    width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: 0 auto;
+  }
+  /* Cards in overview stack */
+  .card {
+    padding: 12px;
+  }
+  .main-title {
+    font-size: 18px;
+  }
+  /* Sidebar toggle button — shown only on mobile */
+  .sidebar-toggle {
+    display: flex !important;
+  }
+}
+
+/* Show sidebar toggle only on mobile */
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--dark);
+  padding: 4px;
+  align-items: center;
 }
 
 /* ─── Guide / Scrollable ──────────────────────────────────────────────────── */
