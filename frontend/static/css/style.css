@@ -853,8 +853,8 @@ tbody tr:hover td { background: var(--cream-dark); }
   .topbar-logo {
     font-size: 18px;
   }
-  /* Hide less important topbar buttons on mobile */
-  #live-btn, .btn-guide {
+  /* Hide guide button on mobile to save space */
+  .btn-guide {
     display: none !important;
   }
   .topbar-right {
