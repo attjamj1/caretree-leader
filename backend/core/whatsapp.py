@@ -72,21 +72,27 @@ async def send_station(to: str, station, project):
     ).format(hint_cost=station.hint_cost, answer_cost=station.answer_cost)
 
     header = f"📍 *Station {station.station_code} — {station.name}*\n\n"
+    photo_footer = "\n\n📸 *Send a photo to complete this station.*"
+    gps_footer   = "\n\n📍 *Send your live location to complete this station.*"
+    text_footer  = (
+        "\n\nReply with your answer.\n"
+        "Type */hint* for a clue (-{hint_cost} pts)\n"
+        "Type */answer* to reveal it (-{answer_cost} pts)\n"
+        "Type */status* to see your score"
+    ).format(hint_cost=station.hint_cost, answer_cost=station.answer_cost)
 
     if station.mission_type == "text":
-        await send_text(to, header + station.clue_text + footer)
+        await send_text(to, header + station.clue_text + text_footer)
 
     elif station.mission_type == "image":
-        await send_image(to, station.clue_media_url, header + footer)
+        # Team submits a photo — bot sends the clue text and asks for a photo
+        await send_text(to, header + station.clue_text + photo_footer)
 
     elif station.mission_type == "gps":
         await send_gps(to, station.gps_lat, station.gps_lng, station.name)
-        await send_text(to, header + station.clue_text + footer)
+        await send_text(to, header + station.clue_text + gps_footer)
 
-    elif station.mission_type == "video":
-        await send_video(to, station.clue_media_url, header + footer)
-
-    if station.photo_required:
+    if station.photo_required and station.mission_type != "image":
         await send_text(
             to,
             "📸 *Photo required!*\n"

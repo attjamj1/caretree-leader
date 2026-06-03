@@ -468,11 +468,6 @@ function buildGuideHTML() {
             <p>Bot sends a location pin. Team walks there and sends their live location.</p>
             <p style="font-style:italic;font-size:11px;margin-top:6px;color:var(--tan-dark);">e.g. Navigate to 1.2647°N, 103.8220°E — verified within 50m</p>
           </div>
-          <div class="guide-card" style="border-top:3px solid #D4A0C0;background:#faf0f6;">
-            <div class="guide-card-title" style="color:#6a1a8a;">🎥 Video clue</div>
-            <p>Bot sends a video. Team watches and answers based on what they saw.</p>
-            <p style="font-style:italic;font-size:11px;margin-top:6px;color:var(--tan-dark);">e.g. Short clip of a location — team identifies it</p>
-          </div>
         </div>
         <p style="font-size:10px;color:var(--tan-dark);margin-top:8px;font-style:italic;">📸 Photo required toggle: any station type can also require a team selfie before answering</p>`
     },
@@ -617,11 +612,6 @@ function _oldRenderGuide_unused() {
             <div class="guide-card-title" style="color:#7a6010;">📍 GPS location</div>
             <p>Bot sends a location pin. Team walks there and sends their live location.</p>
             <p style="font-style:italic;font-size:11px;margin-top:6px;color:var(--tan-dark);">e.g. Navigate to 1.2647°N, 103.8220°E — verified within 50m</p>
-          </div>
-          <div class="guide-card" style="border-top:3px solid #D4A0C0;background:#faf0f6;">
-            <div class="guide-card-title" style="color:#6a1a8a;">🎥 Video clue</div>
-            <p>Bot sends a video. Team watches and answers based on what they saw.</p>
-            <p style="font-style:italic;font-size:11px;margin-top:6px;color:var(--tan-dark);">e.g. Short clip of a location — team identifies it</p>
           </div>
         </div>
         <p style="font-size:10px;color:var(--tan-dark);margin-top:8px;font-style:italic;">📸 Photo required toggle: any station type can also require a team selfie before answering</p>`
@@ -920,16 +910,30 @@ function openEditStation(id, idx) {
 function updateTypeHint() {
   const type = document.getElementById('s-type').value;
   const hints = {
-    text: 'Bot sends text. Team replies with a text answer.',
-    image: 'Bot sends an image. Team replies with text.',
-    gps: 'Bot sends a WhatsApp GPS pin. Team navigates there.',
-    video: 'Bot sends a video. Team watches and replies.',
+    text: 'Bot sends a text clue. Team replies with a text answer.',
+    image: 'Bot sends the clue text. Team takes a photo at the location and sends it — photo = answer.',
+    gps: 'Bot sends a GPS pin. Team walks there and sends their live location — no text answer needed.',
   };
   document.getElementById('s-type-hint').textContent = hints[type] || '';
-  document.getElementById('s-media-group').style.display =
-    ['image','video'].includes(type) ? '' : 'none';
+  // Image stations: team submits photo, no media URL or answer needed
+  document.getElementById('s-media-group').style.display = 'none';
+  const isImage = type === 'image';
+  if (isImage) {
+    document.getElementById('s-answer').closest('.form-group').style.display = 'none';
+    document.getElementById('s-answer-cost').closest('.form-group').style.display = 'none';
+    document.getElementById('s-answer').value = '__image__';
+  } else if (!isGps) {
+    document.getElementById('s-answer').closest('.form-group').style.display = '';
+    document.getElementById('s-answer-cost').closest('.form-group').style.display = '';
+  }
   document.getElementById('s-gps-group').style.display =
     type === 'gps' ? '' : 'none';
+
+  // GPS stations don't need a text answer — hide those fields
+  const isGps = type === 'gps';
+  document.getElementById('s-answer').closest('.form-group').style.display = isGps ? 'none' : '';
+  document.getElementById('s-answer-cost').closest('.form-group').style.display = isGps ? 'none' : '';
+  if (isGps) document.getElementById('s-answer').value = '__gps__';
 }
 
 async function saveStation() {
@@ -949,6 +953,8 @@ async function saveStation() {
     gps_lng: parseFloat(document.getElementById('s-lng')?.value) || null,
   };
 
+  if (data.mission_type === 'gps') data.answer = '__gps__';
+  if (data.mission_type === 'image') data.answer = '__image__';
   if (!data.station_code || !data.answer) {
     alert('Station ID and answer are required'); return;
   }

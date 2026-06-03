@@ -264,14 +264,44 @@ async def _handle_reveal(team: Team, project: Project, db: Session):
 
 async def _handle_photo(team: Team, project: Project, media_url: str, db: Session):
     station = get_next_station(team, db)
-    if not station or not station.photo_required:
+    if not station:
+        await wa.send_text(team.group_number, "📸 Photo received!")
+        return
+
+    prog = get_or_create_progress(team, station, db)
+
+    # Image-type station: photo IS the answer — mark complete and advance
+    if station.mission_type == "image":
+        prog.completed = True
+        prog.completed_at = datetime.now(timezone.utc)
+        prog.photo_submitted = True
+        prog.photo_url = media_url
+        db.commit()
+
+        _log(team, project, "correct", station.station_code,
+             f"Photo submitted at Station {station.station_code}", 0, 0, db)
+
+        next_station = get_next_station(team, db)
+        await wa.send_text(
+            team.group_number,
+            f"📸 *Photo received!* ✅\n"
+            f"Station {station.station_code} cleared!\n\n"
+            + ("Here comes your next mission 👇" if next_station else "🏁 All done!")
+        )
+        if next_station:
+            await wa.send_station(team.group_number, next_station, project)
+        else:
+            await _finish_team(team, project, db)
+        return
+
+    # Other station types: photo is a prerequisite, not the answer
+    if not station.photo_required:
         await wa.send_text(
             team.group_number,
             "📸 Photo received! You can now submit your answer."
         )
         return
 
-    prog = get_or_create_progress(team, station, db)
     prog.photo_submitted = True
     prog.photo_url = media_url
     db.commit()
