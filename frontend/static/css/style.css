@@ -854,7 +854,7 @@ tbody tr:hover td { background: var(--cream-dark); }
   .topbar-logo {
     font-size: 18px;
   }
-  .btn-guide { display: none !important; }
+  #guide-btn { display: none !important; }
 
   .topbar-right {
     gap: 4px;

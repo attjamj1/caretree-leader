@@ -58,7 +58,8 @@ class Team(Base):
     name           = Column(String, nullable=False)
     leader_name    = Column(String, default="")
     mobile         = Column(String, default="")
-    group_number   = Column(String, default="")
+    group_number   = Column(String, default="")   # primary WhatsApp number (leader)
+    member_numbers = Column(JSON, default=list)   # all member numbers to notify
     route          = Column(JSON, default=list)
     start_time     = Column(DateTime, nullable=True)
     end_time       = Column(DateTime, nullable=True)

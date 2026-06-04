@@ -74,15 +74,13 @@
     <button class="btn btn-green btn-sm" id="start-btn" style="display:none" onclick="toggleRace()">
       <i class="ti ti-player-play"></i> <span id="start-label">Start race</span>
     </button>
-    <button class="btn btn-sm" id="live-btn" style="display:none" onclick="openLive()">
+    <button class="btn-guide" id="live-btn" style="display:none" onclick="openLive()">
       <i class="ti ti-external-link"></i> Live view
     </button>
-    <button class="btn-guide" onclick="openGuide()">
+    <button class="btn-guide" id="guide-btn" onclick="openGuide()">
       <i class="ti ti-book"></i> Guide
     </button>
-    <button class="btn btn-sm" onclick="doLogout()" style="font-size:11px;color:var(--tan-dark);">
-      Sign out
-    </button>
+    <button class="btn-guide" onclick="doLogout()">Sign out</button>
   </div>
 </header>
 
@@ -225,23 +223,19 @@
 <div class="modal-overlay" id="modal-team">
   <div class="modal">
     <div class="modal-title">👥 Add team</div>
-    <div class="form-group">
-      <label class="form-label">Team name</label>
-      <input type="text" id="t-name" placeholder="e.g. HabisBalik">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Leader name</label>
-      <input type="text" id="t-leader" placeholder="e.g. Lim chee kiong">
-    </div>
     <div class="grid2">
       <div class="form-group">
-        <label class="form-label">Mobile number</label>
-        <input type="text" id="t-mobile" placeholder="+6590687455">
+        <label class="form-label">Team name</label>
+        <input type="text" id="t-name" placeholder="e.g. HabisBalik">
       </div>
       <div class="form-group">
-        <label class="form-label">WhatsApp number</label>
-        <input type="text" id="t-wa" placeholder="+6590687455">
+        <label class="form-label">Leader name</label>
+        <input type="text" id="t-leader" placeholder="e.g. Jamie">
       </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">WhatsApp number</label>
+      <input type="text" id="t-wa" placeholder="+6590687455" style="width:100%">
     </div>
     <div class="modal-footer">
       <button class="btn btn-primary" onclick="saveTeam()">Add team</button>

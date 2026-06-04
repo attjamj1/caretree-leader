@@ -39,18 +39,22 @@ def init_db():
 def _safe_migrate():
     """Add new columns to existing tables without breaking anything."""
     from sqlalchemy import text, inspect
+    inspector = inspect(engine)
+    migrations = [
+        ("projects", "user_id",        "VARCHAR"),
+        ("projects", "live_token",     "VARCHAR"),
+        ("teams",    "member_numbers", "JSON"),
+    ]
     with engine.connect() as conn:
-        inspector = inspect(engine)
-        existing = {col["name"] for col in inspector.get_columns("projects")}
-        to_add = {
-            "user_id": "VARCHAR",
-            "live_token": "VARCHAR",
-        }
-        for col, typ in to_add.items():
+        for table, col, typ in migrations:
+            try:
+                existing = {c["name"] for c in inspector.get_columns(table)}
+            except Exception:
+                continue
             if col not in existing:
                 try:
-                    conn.execute(text(f"ALTER TABLE projects ADD COLUMN {col} {typ}"))
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {typ}"))
                     conn.commit()
-                    print(f"Migration: added column projects.{col}")
+                    print(f"Migration: added column {table}.{col}")
                 except Exception as e:
-                    print(f"Migration warning ({col}): {e}")
+                    print(f"Migration warning ({table}.{col}): {e}")

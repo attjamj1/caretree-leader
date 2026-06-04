@@ -988,17 +988,16 @@ async function saveTeam() {
   const name = document.getElementById('t-name').value.trim();
   if (!name) { alert('Team name is required'); return; }
 
+  const wa = document.getElementById('t-wa').value.trim();
   await api('POST', `/projects/${activeProject.id}/teams`, {
     name,
     leader_name: document.getElementById('t-leader').value.trim(),
-    mobile: document.getElementById('t-mobile').value.trim(),
-    group_number: document.getElementById('t-wa').value.trim(),
+    mobile: wa,
+    group_number: wa,
   });
 
   closeModal('modal-team');
-  ['t-name','t-leader','t-mobile','t-wa'].forEach(id =>
-    document.getElementById(id).value = ''
-  );
+  ['t-name','t-leader','t-wa'].forEach(id => document.getElementById(id).value = '');
   await selectProject(activeProject.id);
   showTab('teams', document.querySelectorAll('.tab-btn')[3]);
 }

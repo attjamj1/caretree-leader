@@ -100,6 +100,16 @@ async def send_station(to: str, station, project):
         )
 
 
+async def send_to_all_members(team, message: str):
+    """Send a message to every member of a team."""
+    numbers = list(team.member_numbers or [])
+    if team.group_number and team.group_number not in numbers:
+        numbers.insert(0, team.group_number)
+    for number in numbers:
+        if number:
+            await send_text(number, message)
+
+
 async def send_leaderboard(to: str, teams: list, project):
     """Send a live leaderboard snapshot to a number."""
     lines = [f"🏆 *{project.name} — Live Rankings*\n"]

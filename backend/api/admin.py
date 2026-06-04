@@ -52,6 +52,7 @@ class TeamCreate(BaseModel):
     leader_name: str = ""
     mobile: str = ""
     group_number: str = ""
+    member_numbers: list = []
 
 class StationCreate(BaseModel):
     station_code: str
@@ -359,6 +360,7 @@ def _team_dict(t: Team, rank=None):
         "leader_name": t.leader_name,
         "mobile": t.mobile,
         "group_number": t.group_number,
+        "member_numbers": t.member_numbers or [],
         "status": t.status,
         "route": t.route,
         "stages_done": t.stages_done,
