@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Header, UploadFile, File
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-import os
+import os, uuid, shutil
 from datetime import datetime, timezone
 
 from db.database import get_db
@@ -12,6 +12,35 @@ from core import whatsapp as wa
 from api.auth import verify_token
 
 router = APIRouter()
+
+# ─── Upload ───────────────────────────────────────────────────────────────────
+
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "static", "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+ALLOWED = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+
+@router.post("/upload")
+async def upload_image(file: UploadFile = File(...), x_api_key: str = Header(default="")):
+    username = None
+    if x_api_key == os.getenv("ADMIN_API_KEY", "changeme"):
+        username = "__admin__"
+    else:
+        from api.auth import verify_token
+        username = verify_token(x_api_key)
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    if file.content_type not in ALLOWED:
+        raise HTTPException(status_code=400, detail="Only JPEG, PNG, GIF, WEBP allowed")
+
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "jpg"
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    dest = os.path.join(UPLOAD_DIR, filename)
+    with open(dest, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    return {"url": f"/static/uploads/{filename}"}
 
 
 # ─── Auth ─────────────────────────────────────────────────────────────────────

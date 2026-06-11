@@ -930,6 +930,32 @@ tbody tr:hover td { background: var(--cream-dark); }
   align-items: center;
 }
 
+/* ─── Image drop zone ─────────────────────────────────────────────────────── */
+.img-drop-zone {
+  border: 2px dashed var(--tan-dark);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  background: var(--cream-dark);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.img-drop-zone.drag-over {
+  border-color: var(--red);
+  background: #fdf4f4;
+}
+.img-drop-zone.has-img {
+  border-color: var(--green);
+  background: var(--green-light);
+}
+.img-drop-label {
+  font-size: 12px;
+  color: var(--tan-dark);
+}
+
 /* ─── Guide / Scrollable ──────────────────────────────────────────────────── */
 .guide-wrapper { padding: 8px 0; }
 

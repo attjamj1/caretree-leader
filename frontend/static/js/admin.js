@@ -876,6 +876,50 @@ function getTeamName(teamId) {
   return t ? t.name : teamId;
 }
 
+// ─── Image upload helpers ──────────────────────────────────────────────────
+
+async function uploadImageFile(file, inputId, dropId) {
+  const zone = document.getElementById(dropId);
+  zone.classList.add('drag-over');
+  const form = new FormData();
+  form.append('file', file);
+  try {
+    const res = await fetch('/api/admin/upload', {
+      method: 'POST',
+      headers: { 'x-api-key': API_KEY },
+      body: form,
+    });
+    if (!res.ok) { alert('Upload failed'); return; }
+    const { url } = await res.json();
+    document.getElementById(inputId).value = url;
+    updateImgPreview(inputId, 'prev-' + inputId);
+    zone.classList.remove('drag-over');
+    zone.classList.add('has-img');
+  } catch (e) {
+    alert('Upload error: ' + e.message);
+    zone.classList.remove('drag-over');
+  }
+}
+
+function handleImgDrop(event, inputId, dropId) {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) uploadImageFile(file, inputId, dropId);
+}
+
+function handleImgFile(input, inputId, dropId) {
+  const file = input.files[0];
+  if (file) uploadImageFile(file, inputId, dropId);
+}
+
+function updateImgPreview(inputId, prevId) {
+  const url = document.getElementById(inputId)?.value;
+  const img = document.getElementById(prevId);
+  if (!img) return;
+  if (url) { img.src = url; img.style.display = ''; }
+  else img.style.display = 'none';
+}
+
 // ─── Station CRUD ──────────────────────────────────────────────────────────
 
 function openAddStation() {
@@ -892,6 +936,14 @@ function openAddStation() {
   document.getElementById('s-answer-cost').value = 20;
   document.getElementById('s-photo').checked = false;
   document.getElementById('s-chain-photo').checked = true;
+  ['drop-s-media','drop-s-chain-media'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('has-img','drag-over');
+  });
+  ['prev-s-media','prev-s-chain-media'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.src=''; el.style.display='none'; }
+  });
   updateTypeHint();
   openModal('modal-station');
 }
@@ -919,6 +971,13 @@ function openEditStation(id, idx) {
   document.getElementById('s-chain-media').value = s.chain_media_url || '';
   document.getElementById('s-chain-hint').value = s.chain_hint || '';
   document.getElementById('s-chain-photo').checked = s.chain_photo_required !== false;
+  // Show existing image previews
+  updateImgPreview('s-media', 'prev-s-media');
+  updateImgPreview('s-chain-media', 'prev-s-chain-media');
+  ['drop-s-media','drop-s-chain-media'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('has-img', !!document.getElementById(id.replace('drop-',''))?.value);
+  });
   updateTypeHint();
   openModal('modal-station');
 }

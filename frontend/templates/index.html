@@ -174,8 +174,12 @@
       <textarea id="s-clue" placeholder="What the team sees at this station..."></textarea>
     </div>
     <div id="s-media-group" class="form-group" style="display:none">
-      <label class="form-label">Photo clue URL <span style="font-size:10px;color:var(--tan-dark)">(optional — bot sends this image before the clue text)</span></label>
-      <input type="text" id="s-media" placeholder="https://i.imgur.com/... or any direct image link">
+      <label class="form-label">Photo clue <span style="font-size:10px;color:var(--tan-dark)">(optional — bot sends this image before the clue text)</span></label>
+      <div class="img-drop-zone" id="drop-s-media" ondragover="event.preventDefault()" ondrop="handleImgDrop(event,'s-media','drop-s-media')">
+        <span class="img-drop-label">Drop image here or <label style="color:var(--red);cursor:pointer">browse<input type="file" accept="image/*" style="display:none" onchange="handleImgFile(this,'s-media','drop-s-media')"></label></span>
+        <img id="prev-s-media" style="display:none;max-height:80px;border-radius:4px;margin-top:6px">
+      </div>
+      <input type="text" id="s-media" placeholder="or paste a URL" style="margin-top:6px" oninput="updateImgPreview('s-media','prev-s-media')">
     </div>
     <div id="s-gps-group" class="grid2" style="display:none">
       <div class="form-group">
@@ -219,8 +223,12 @@
         <textarea id="s-chain-clue" placeholder="e.g. Find the nearest 7-Eleven and take a group selfie with the storefront! 📸" style="min-height:56px"></textarea>
       </div>
       <div class="form-group">
-        <label class="form-label">Chain photo clue URL <span style="font-size:10px;color:var(--tan-dark)">(optional — bot sends this image with the chain clue)</span></label>
-        <input type="text" id="s-chain-media" placeholder="https://i.imgur.com/... or any direct image link">
+        <label class="form-label">Chain photo clue <span style="font-size:10px;color:var(--tan-dark)">(optional — bot sends this image with the chain clue)</span></label>
+        <div class="img-drop-zone" id="drop-s-chain-media" ondragover="event.preventDefault()" ondrop="handleImgDrop(event,'s-chain-media','drop-s-chain-media')">
+          <span class="img-drop-label">Drop image here or <label style="color:var(--red);cursor:pointer">browse<input type="file" accept="image/*" style="display:none" onchange="handleImgFile(this,'s-chain-media','drop-s-chain-media')"></label></span>
+          <img id="prev-s-chain-media" style="display:none;max-height:80px;border-radius:4px;margin-top:6px">
+        </div>
+        <input type="text" id="s-chain-media" placeholder="or paste a URL" style="margin-top:6px" oninput="updateImgPreview('s-chain-media','prev-s-chain-media')">
       </div>
       <div class="form-group">
         <label class="form-label">Chain hint <span style="font-size:10px;color:var(--tan-dark)">(shown when team types /hint in phase 2)</span></label>
