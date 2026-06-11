@@ -46,6 +46,7 @@ class ProjectUpdate(BaseModel):
     scoring_hint_pts: Optional[int] = None
     scoring_answer_pts: Optional[int] = None
     scoring_stage_pts: Optional[int] = None
+    finish_message: Optional[str] = None
 
 class TeamCreate(BaseModel):
     name: str
@@ -342,6 +343,7 @@ def _project_dict(p: Project, detail=False):
         "status": p.status,
         "station_count": len(p.stations),
         "team_count": len(p.teams),
+        "finish_message": p.finish_message or "",
         "scoring": {
             "wrong_pts": p.scoring_wrong_pts,
             "wrong_time": p.scoring_wrong_time,

@@ -421,6 +421,8 @@ async def _finish_team(team: Team, project: Project, db: Session):
     _log(team, project, "finish", "",
          f"{team.name} finished the race", 0, 0, db)
 
+    custom = (project.finish_message or "").strip()
+    closing = f"\n\n{custom}" if custom else "\n\nWell done! Wait for the final leaderboard."
     await wa.send_text(
         team.group_number,
         f"🏁 *{team.name} — Race Complete!*\n\n"
@@ -429,8 +431,8 @@ async def _finish_team(team: Team, project: Project, db: Session):
         f"Hints used: {team.hints_used}\n"
         f"Penalty: +{team.penalty_mins} min\n"
         f"Total time: {duration}\n\n"
-        f"*Final score: {score} pts* 🎉\n\n"
-        f"Well done! Wait for the final leaderboard."
+        f"*Final score: {score} pts* 🎉"
+        f"{closing}"
     )
 
 

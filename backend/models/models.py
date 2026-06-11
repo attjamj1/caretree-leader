@@ -46,6 +46,7 @@ class Project(Base):
     scoring_answer_pts  = Column(Integer, default=20)
     scoring_stage_pts   = Column(Integer, default=100)
     scoring_tiebreak    = Column(String, default="time")
+    finish_message      = Column(Text, default="")
 
 
 # ─── Team ───────────────────────────────────────────────────────────────────

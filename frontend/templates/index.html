@@ -211,17 +211,12 @@
     </div>
 
     <!-- ── Chain mission ──────────────────────────────────────────────────── -->
-    <div class="check-row" style="margin-top:12px">
-      <input type="checkbox" id="s-chain-enable" onchange="toggleChainSection()">
-      <label for="s-chain-enable">🔗 Enable chain mission (phase 2 after correct answer)</label>
-    </div>
-    <div id="s-chain-group" style="display:none;border-top:1px dashed var(--tan);margin-top:12px;padding-top:12px;">
-      <div style="font-size:11px;color:var(--tan-dark);margin-bottom:10px;">
-        After answering correctly, team gets this clue and must send a selfie to complete the station.
-      </div>
+    <div style="border-top:1px dashed var(--tan);margin-top:14px;padding-top:12px;">
+      <div style="font-family:var(--font-hand);font-size:15px;color:var(--dark-mid);margin-bottom:4px;">🔗 Chain mission <span style="font-size:11px;font-family:var(--font-body);color:var(--tan-dark)">(optional — leave blank to disable)</span></div>
+      <div style="font-size:11px;color:var(--tan-dark);margin-bottom:10px;">After answering correctly, send this clue and wait for a selfie before advancing.</div>
       <div class="form-group">
         <label class="form-label">Chain clue</label>
-        <textarea id="s-chain-clue" placeholder="e.g. Find the nearest 7-Eleven and take a group selfie with the storefront! 📸"></textarea>
+        <textarea id="s-chain-clue" placeholder="e.g. Find the nearest 7-Eleven and take a group selfie with the storefront! 📸" style="min-height:56px"></textarea>
       </div>
       <div class="form-group">
         <label class="form-label">Chain hint <span style="font-size:10px;color:var(--tan-dark)">(shown when team types /hint in phase 2)</span></label>
