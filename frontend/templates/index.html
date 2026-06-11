@@ -174,8 +174,8 @@
       <textarea id="s-clue" placeholder="What the team sees at this station..."></textarea>
     </div>
     <div id="s-media-group" class="form-group" style="display:none">
-      <label class="form-label">Media URL (image/video)</label>
-      <input type="text" id="s-media" placeholder="https://cloudinary.com/...">
+      <label class="form-label">Photo clue URL <span style="font-size:10px;color:var(--tan-dark)">(optional — bot sends this image before the clue text)</span></label>
+      <input type="text" id="s-media" placeholder="https://i.imgur.com/... or any direct image link">
     </div>
     <div id="s-gps-group" class="grid2" style="display:none">
       <div class="form-group">
@@ -217,6 +217,10 @@
       <div class="form-group">
         <label class="form-label">Chain clue</label>
         <textarea id="s-chain-clue" placeholder="e.g. Find the nearest 7-Eleven and take a group selfie with the storefront! 📸" style="min-height:56px"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chain photo clue URL <span style="font-size:10px;color:var(--tan-dark)">(optional — bot sends this image with the chain clue)</span></label>
+        <input type="text" id="s-chain-media" placeholder="https://i.imgur.com/... or any direct image link">
       </div>
       <div class="form-group">
         <label class="form-label">Chain hint <span style="font-size:10px;color:var(--tan-dark)">(shown when team types /hint in phase 2)</span></label>

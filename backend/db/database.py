@@ -45,6 +45,7 @@ def _safe_migrate():
         ("projects",  "live_token",           "VARCHAR"),
         ("teams",     "member_numbers",       "JSON"),
         ("stations",  "chain_clue",           "TEXT DEFAULT ''"),
+        ("stations",  "chain_media_url",      "VARCHAR DEFAULT ''"),
         ("stations",  "chain_hint",           "TEXT DEFAULT ''"),
         ("stations",  "chain_photo_required", "BOOLEAN DEFAULT FALSE"),
         ("progress",  "awaiting_chain",       "BOOLEAN DEFAULT FALSE"),

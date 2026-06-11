@@ -180,10 +180,11 @@ async def _handle_answer(team: Team, project: Project, body: str, db: Session):
             _log(team, project, "correct", station.station_code,
                  f"Phase 1 complete at Station {station.station_code}", 0, 0, db)
             hint_note = f"\n\nType */hint* for a clue (-{station.hint_cost} pts)" if station.chain_hint else ""
-            await wa.send_text(
-                team.group_number,
-                f"✅ *Correct!*\n\n{station.chain_clue}{hint_note}"
-            )
+            body = f"✅ *Correct!*\n\n{station.chain_clue}{hint_note}"
+            if station.chain_media_url:
+                await wa.send_image(team.group_number, station.chain_media_url, body)
+            else:
+                await wa.send_text(team.group_number, body)
             return
 
         # Normal completion

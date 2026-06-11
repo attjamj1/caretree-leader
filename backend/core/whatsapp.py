@@ -82,11 +82,17 @@ async def send_station(to: str, station, project):
     ).format(hint_cost=station.hint_cost, answer_cost=station.answer_cost)
 
     if station.mission_type == "text":
-        await send_text(to, header + station.clue_text + text_footer)
+        if station.clue_media_url:
+            await send_image(to, station.clue_media_url, header + station.clue_text + text_footer)
+        else:
+            await send_text(to, header + station.clue_text + text_footer)
 
     elif station.mission_type == "image":
-        # Team submits a photo — bot sends the clue text and asks for a photo
-        await send_text(to, header + station.clue_text + photo_footer)
+        # Team submits a photo — bot sends clue (+ optional image) and asks for a photo
+        if station.clue_media_url:
+            await send_image(to, station.clue_media_url, header + station.clue_text + photo_footer)
+        else:
+            await send_text(to, header + station.clue_text + photo_footer)
 
     elif station.mission_type == "gps":
         await send_gps(to, station.gps_lat, station.gps_lng, station.name)

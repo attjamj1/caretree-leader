@@ -883,7 +883,7 @@ function openAddStation() {
   editingStationIdx = null;
   document.getElementById('station-modal-title').textContent = 'Add station';
   document.getElementById('delete-station-btn').style.display = 'none';
-  ['s-code','s-name','s-clue','s-answer','s-hint','s-media','s-chain-clue','s-chain-hint'].forEach(id => {
+  ['s-code','s-name','s-clue','s-answer','s-hint','s-media','s-chain-clue','s-chain-media','s-chain-hint'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -916,6 +916,7 @@ function openEditStation(id, idx) {
   if (s.gps_lng) document.getElementById('s-lng').value = s.gps_lng;
   // Chain fields
   document.getElementById('s-chain-clue').value = s.chain_clue || '';
+  document.getElementById('s-chain-media').value = s.chain_media_url || '';
   document.getElementById('s-chain-hint').value = s.chain_hint || '';
   document.getElementById('s-chain-photo').checked = s.chain_photo_required !== false;
   updateTypeHint();
@@ -935,8 +936,8 @@ function updateTypeHint() {
   const isImage = type === 'image';
   const needsAnswer = !isGps && !isImage;
 
-  // Media URL field — not needed for any type now
-  document.getElementById('s-media-group').style.display = 'none';
+  // Media URL field — show for text/image stations (bot sends photo as clue)
+  document.getElementById('s-media-group').style.display = (isGps) ? 'none' : '';
 
   // GPS coordinate fields
   document.getElementById('s-gps-group').style.display = isGps ? '' : 'none';
@@ -972,6 +973,7 @@ async function saveStation() {
 
   // Chain mission fields — enabled if chain_clue is filled in
   data.chain_clue           = document.getElementById('s-chain-clue').value.trim();
+  data.chain_media_url      = document.getElementById('s-chain-media').value.trim();
   data.chain_hint           = document.getElementById('s-chain-hint').value.trim();
   data.chain_photo_required = data.chain_clue ? document.getElementById('s-chain-photo').checked : false;
 
