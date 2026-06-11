@@ -293,6 +293,7 @@ function renderStations(p) {
             <span class="station-name">${s.name}</span>
             <span class="type-pill tp-${s.mission_type}">${s.mission_type}</span>
             ${s.photo_required ? '<span class="type-pill" style="background:#fdf4ff;color:#7e22ce">📸 photo</span>' : ''}
+            ${s.chain_clue ? '<span class="type-pill" style="background:#fff7ed;color:#c2410c">🔗 chain</span>' : ''}
           </div>
           <div class="station-detail">${s.clue_text}</div>
           <div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap">
@@ -869,12 +870,17 @@ function getTeamName(teamId) {
 
 // ─── Station CRUD ──────────────────────────────────────────────────────────
 
+function toggleChainSection() {
+  const enabled = document.getElementById('s-chain-enable').checked;
+  document.getElementById('s-chain-group').style.display = enabled ? '' : 'none';
+}
+
 function openAddStation() {
   editingStationId = null;
   editingStationIdx = null;
   document.getElementById('station-modal-title').textContent = 'Add station';
   document.getElementById('delete-station-btn').style.display = 'none';
-  ['s-code','s-name','s-clue','s-answer','s-hint','s-media'].forEach(id => {
+  ['s-code','s-name','s-clue','s-answer','s-hint','s-media','s-chain-clue','s-chain-hint'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -882,6 +888,9 @@ function openAddStation() {
   document.getElementById('s-hint-cost').value = 5;
   document.getElementById('s-answer-cost').value = 20;
   document.getElementById('s-photo').checked = false;
+  document.getElementById('s-chain-enable').checked = false;
+  document.getElementById('s-chain-photo').checked = true;
+  document.getElementById('s-chain-group').style.display = 'none';
   updateTypeHint();
   openModal('modal-station');
 }
@@ -904,6 +913,13 @@ function openEditStation(id, idx) {
   if (s.clue_media_url) document.getElementById('s-media').value = s.clue_media_url;
   if (s.gps_lat) document.getElementById('s-lat').value = s.gps_lat;
   if (s.gps_lng) document.getElementById('s-lng').value = s.gps_lng;
+  // Chain fields
+  const hasChain = !!(s.chain_clue);
+  document.getElementById('s-chain-enable').checked = hasChain;
+  document.getElementById('s-chain-clue').value = s.chain_clue || '';
+  document.getElementById('s-chain-hint').value = s.chain_hint || '';
+  document.getElementById('s-chain-photo').checked = s.chain_photo_required !== false;
+  document.getElementById('s-chain-group').style.display = hasChain ? '' : 'none';
   updateTypeHint();
   openModal('modal-station');
 }
@@ -955,6 +971,12 @@ async function saveStation() {
     gps_lat: parseFloat(document.getElementById('s-lat')?.value) || null,
     gps_lng: parseFloat(document.getElementById('s-lng')?.value) || null,
   };
+
+  // Chain mission fields
+  const chainEnabled = document.getElementById('s-chain-enable').checked;
+  data.chain_clue           = chainEnabled ? document.getElementById('s-chain-clue').value.trim() : '';
+  data.chain_hint           = chainEnabled ? document.getElementById('s-chain-hint').value.trim() : '';
+  data.chain_photo_required = chainEnabled ? document.getElementById('s-chain-photo').checked : false;
 
   if (data.mission_type === 'gps') data.answer = '__gps__';
   if (data.mission_type === 'image') data.answer = '__image__';

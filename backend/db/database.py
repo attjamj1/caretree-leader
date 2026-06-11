@@ -41,9 +41,13 @@ def _safe_migrate():
     from sqlalchemy import text, inspect
     inspector = inspect(engine)
     migrations = [
-        ("projects", "user_id",        "VARCHAR"),
-        ("projects", "live_token",     "VARCHAR"),
-        ("teams",    "member_numbers", "JSON"),
+        ("projects",  "user_id",              "VARCHAR"),
+        ("projects",  "live_token",           "VARCHAR"),
+        ("teams",     "member_numbers",       "JSON"),
+        ("stations",  "chain_clue",           "TEXT DEFAULT ''"),
+        ("stations",  "chain_hint",           "TEXT DEFAULT ''"),
+        ("stations",  "chain_photo_required", "BOOLEAN DEFAULT FALSE"),
+        ("progress",  "awaiting_chain",       "BOOLEAN DEFAULT FALSE"),
     ]
     with engine.connect() as conn:
         for table, col, typ in migrations:

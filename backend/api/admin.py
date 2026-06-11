@@ -68,6 +68,9 @@ class StationCreate(BaseModel):
     hint_cost: int = 5
     answer_cost: int = 20
     photo_required: bool = False
+    chain_clue: str = ""
+    chain_hint: str = ""
+    chain_photo_required: bool = False
 
 class BroadcastMsg(BaseModel):
     message: str
@@ -389,4 +392,7 @@ def _station_dict(s: Station):
         "hint_cost": s.hint_cost,
         "answer_cost": s.answer_cost,
         "photo_required": s.photo_required,
+        "chain_clue": s.chain_clue or "",
+        "chain_hint": s.chain_hint or "",
+        "chain_photo_required": s.chain_photo_required or False,
     }

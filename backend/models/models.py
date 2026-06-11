@@ -107,6 +107,11 @@ class Station(Base):
     answer_cost    = Column(Integer, default=20)
     photo_required = Column(Boolean, default=False)
 
+    # ── Chain mission (phase 2) ──────────────────────────────────────────────
+    chain_clue           = Column(Text, default="")          # clue shown after correct answer
+    chain_hint           = Column(Text, default="")          # hint for phase 2
+    chain_photo_required = Column(Boolean, default=False)    # selfie required to complete
+
     project  = relationship("Project", back_populates="stations")
     progress = relationship("Progress", back_populates="station", cascade="all, delete")
 
@@ -126,6 +131,7 @@ class Progress(Base):
     answer_revealed = Column(Boolean, default=False)
     photo_submitted = Column(Boolean, default=False)
     photo_url       = Column(String, default="")
+    awaiting_chain  = Column(Boolean, default=False)  # team is in phase 2 of a chain station
 
     team    = relationship("Team",    back_populates="progress")
     station = relationship("Station", back_populates="progress")

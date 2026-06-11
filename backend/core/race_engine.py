@@ -154,6 +154,15 @@ async def _handle_answer(team: Team, project: Project, body: str, db: Session):
 
     prog = get_or_create_progress(team, station, db)
 
+    # If team is in phase 2 of a chain station, text answers aren't accepted
+    if prog.awaiting_chain:
+        await wa.send_text(
+            team.group_number,
+            "📸 *You're on the second part of this mission!*\n"
+            "Send your photo to complete this station."
+        )
+        return
+
     if station.photo_required and not prog.photo_submitted:
         await wa.send_text(
             team.group_number,
@@ -163,6 +172,21 @@ async def _handle_answer(team: Team, project: Project, body: str, db: Session):
 
     if check_answer(body, station.answer):
         # ✅ Correct
+
+        # Chain mission — phase 1 done, reveal phase 2 clue
+        if station.chain_clue:
+            prog.awaiting_chain = True
+            db.commit()
+            _log(team, project, "correct", station.station_code,
+                 f"Phase 1 complete at Station {station.station_code}", 0, 0, db)
+            hint_note = f"\n\nType */hint* for a clue (-{station.hint_cost} pts)" if station.chain_hint else ""
+            await wa.send_text(
+                team.group_number,
+                f"✅ *Correct!*\n\n{station.chain_clue}{hint_note}"
+            )
+            return
+
+        # Normal completion
         prog.completed = True
         prog.completed_at = datetime.now(timezone.utc)
         db.commit()
@@ -205,14 +229,33 @@ async def _handle_answer(team: Team, project: Project, body: str, db: Session):
 
 async def _handle_hint(team: Team, project: Project, db: Session):
     station = get_next_station(team, db)
-    if not station or not station.hint_text:
-        await wa.send_text(
-            team.group_number,
-            "No hint available for this station."
-        )
+    if not station:
+        await wa.send_text(team.group_number, "No hint available.")
         return
 
     prog = get_or_create_progress(team, station, db)
+
+    # If in chain phase, use the chain hint
+    if prog.awaiting_chain:
+        hint = station.chain_hint
+        if not hint:
+            await wa.send_text(team.group_number, "No hint available for this part.")
+            return
+        prog.hints_used += 1
+        db.commit()
+        _log(team, project, "hint", station.station_code,
+             f"Chain hint used at Station {station.station_code}",
+             -station.hint_cost, 0, db)
+        await wa.send_text(
+            team.group_number,
+            f"💡 *Hint*\n(-{station.hint_cost} pts deducted)\n\n{hint}"
+        )
+        return
+
+    if not station.hint_text:
+        await wa.send_text(team.group_number, "No hint available for this station.")
+        return
+
     prog.hints_used += 1
     db.commit()
 
@@ -269,6 +312,31 @@ async def _handle_photo(team: Team, project: Project, media_url: str, db: Sessio
         return
 
     prog = get_or_create_progress(team, station, db)
+
+    # ── Chain phase 2: selfie completes the station ───────────────────────────
+    if prog.awaiting_chain and station.chain_photo_required:
+        prog.completed = True
+        prog.completed_at = datetime.now(timezone.utc)
+        prog.awaiting_chain = False
+        prog.photo_submitted = True
+        prog.photo_url = media_url
+        db.commit()
+
+        _log(team, project, "correct", station.station_code,
+             f"Chain selfie at Station {station.station_code}", 0, 0, db)
+
+        next_station = get_next_station(team, db)
+        await wa.send_text(
+            team.group_number,
+            f"📸 *Selfie received!* ✅\n"
+            f"Station {station.station_code} cleared!\n\n"
+            + ("Here comes your next mission 👇" if next_station else "🏁 All done!")
+        )
+        if next_station:
+            await wa.send_station(team.group_number, next_station, project)
+        else:
+            await _finish_team(team, project, db)
+        return
 
     # Image-type station: photo IS the answer — mark complete and advance
     if station.mission_type == "image":
