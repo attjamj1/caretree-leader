@@ -50,6 +50,7 @@ def _safe_migrate():
         ("stations",  "chain_photo_required", "BOOLEAN DEFAULT FALSE"),
         ("progress",  "awaiting_chain",       "BOOLEAN DEFAULT FALSE"),
         ("projects",  "finish_message",       "TEXT DEFAULT ''"),
+        ("stations",  "is_final",             "BOOLEAN DEFAULT FALSE"),
     ]
     with engine.connect() as conn:
         for table, col, typ in migrations:

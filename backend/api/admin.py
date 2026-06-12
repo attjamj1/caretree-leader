@@ -102,6 +102,7 @@ class StationCreate(BaseModel):
     chain_media_url: str = ""
     chain_hint: str = ""
     chain_photo_required: bool = False
+    is_final: bool = False
 
 class BroadcastMsg(BaseModel):
     message: str
@@ -428,4 +429,5 @@ def _station_dict(s: Station):
         "chain_media_url": s.chain_media_url or "",
         "chain_hint": s.chain_hint or "",
         "chain_photo_required": s.chain_photo_required or False,
+        "is_final": s.is_final or False,
     }

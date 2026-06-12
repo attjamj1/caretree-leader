@@ -294,6 +294,7 @@ function renderStations(p) {
             <span class="type-pill tp-${s.mission_type}">${s.mission_type}</span>
             ${s.photo_required ? '<span class="type-pill" style="background:#fdf4ff;color:#7e22ce">📸 photo</span>' : ''}
             ${s.chain_clue ? '<span class="type-pill" style="background:#fff7ed;color:#c2410c">🔗 chain</span>' : ''}
+            ${s.is_final ? '<span class="type-pill" style="background:#f0fdf4;color:#15803d">📌 final</span>' : ''}
           </div>
           <div class="station-detail">${s.clue_text}</div>
           <div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap">
@@ -936,6 +937,7 @@ function openAddStation() {
   document.getElementById('s-answer-cost').value = 20;
   document.getElementById('s-photo').checked = false;
   document.getElementById('s-chain-photo').checked = true;
+  document.getElementById('s-final').checked = false;
   ['drop-s-media','drop-s-chain-media'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('has-img','drag-over');
@@ -971,6 +973,7 @@ function openEditStation(id, idx) {
   document.getElementById('s-chain-media').value = s.chain_media_url || '';
   document.getElementById('s-chain-hint').value = s.chain_hint || '';
   document.getElementById('s-chain-photo').checked = s.chain_photo_required !== false;
+  document.getElementById('s-final').checked = s.is_final === true;
   // Show existing image previews
   updateImgPreview('s-media', 'prev-s-media');
   updateImgPreview('s-chain-media', 'prev-s-chain-media');
@@ -1035,6 +1038,7 @@ async function saveStation() {
   data.chain_media_url      = document.getElementById('s-chain-media').value.trim();
   data.chain_hint           = document.getElementById('s-chain-hint').value.trim();
   data.chain_photo_required = data.chain_clue ? document.getElementById('s-chain-photo').checked : false;
+  data.is_final             = document.getElementById('s-final').checked;
 
   if (data.mission_type === 'gps') data.answer = '__gps__';
   if (data.mission_type === 'image') data.answer = '__image__';

@@ -46,18 +46,20 @@ def assign_routes(project, db: Session):
     """
     Called when race starts — shuffles station order uniquely per team
     so they never crowd the same station simultaneously.
+    Stations marked is_final are always appended at the end, in order_index order.
     """
-    station_codes = [s.station_code for s in project.stations]
+    final_codes  = [s.station_code for s in sorted(project.stations, key=lambda s: s.order_index) if s.is_final]
+    normal_codes = [s.station_code for s in project.stations if not s.is_final]
 
     for i, team in enumerate(project.teams):
-        shuffled = station_codes.copy()
+        shuffled = normal_codes.copy()
         random.shuffle(shuffled)
 
         # rotate so each team starts at a different station
         if i < len(shuffled):
             shuffled = shuffled[i:] + shuffled[:i]
 
-        team.route = shuffled
+        team.route = shuffled + final_codes
 
     db.commit()
     return True

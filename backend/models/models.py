@@ -114,6 +114,9 @@ class Station(Base):
     chain_hint           = Column(Text, default="")          # hint for phase 2
     chain_photo_required = Column(Boolean, default=False)    # selfie required to complete
 
+    # ── Routing ──────────────────────────────────────────────────────────────
+    is_final = Column(Boolean, default=False)  # always appended last in every team's route
+
     project  = relationship("Project", back_populates="stations")
     progress = relationship("Progress", back_populates="station", cascade="all, delete")
 
