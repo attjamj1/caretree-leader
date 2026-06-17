@@ -178,7 +178,14 @@ async def _handle_answer(team: Team, project: Project, body: str, db: Session):
             hint_note = f"\n\nType */hint* for a clue (-{station.hint_cost} pts)" if station.chain_hint else ""
             body = f"✅ *Correct!*\n\n{station.chain_clue}{hint_note}"
             if station.chain_media_url:
-                await wa.send_image(team.group_number, station.chain_media_url, body)
+                try:
+                    await wa.send_image(team.group_number, station.chain_media_url, body)
+                except Exception as e:
+                    # Never let a broken/missing image silently swallow the whole message —
+                    # the team has already been advanced to phase 2 in the DB, so they MUST
+                    # get the clue text one way or another.
+                    print(f"[chain image send failed, falling back to text] {e}")
+                    await wa.send_text(team.group_number, body)
             else:
                 await wa.send_text(team.group_number, body)
             return

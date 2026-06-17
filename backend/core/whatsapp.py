@@ -95,14 +95,22 @@ async def send_station(to: str, station, project):
 
     if station.mission_type == "text":
         if station.clue_media_url:
-            await send_image(to, station.clue_media_url, header + station.clue_text + text_footer)
+            try:
+                await send_image(to, station.clue_media_url, header + station.clue_text + text_footer)
+            except Exception as e:
+                print(f"[clue image send failed, falling back to text] {e}")
+                await send_text(to, header + station.clue_text + text_footer)
         else:
             await send_text(to, header + station.clue_text + text_footer)
 
     elif station.mission_type == "image":
         # Team submits a photo — bot sends clue (+ optional image) and asks for a photo
         if station.clue_media_url:
-            await send_image(to, station.clue_media_url, header + station.clue_text + photo_footer)
+            try:
+                await send_image(to, station.clue_media_url, header + station.clue_text + photo_footer)
+            except Exception as e:
+                print(f"[clue image send failed, falling back to text] {e}")
+                await send_text(to, header + station.clue_text + photo_footer)
         else:
             await send_text(to, header + station.clue_text + photo_footer)
 
