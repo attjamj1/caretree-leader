@@ -65,15 +65,28 @@ def assign_routes(project, db: Session):
     return True
 
 
-def get_team_by_number(mobile: str, project_id: str, db: Session) -> Team | None:
-    """Find team by their WhatsApp number across a project."""
+def get_team_by_number(mobile: str, db: Session) -> Team | None:
+    """
+    Find a team by their WhatsApp number, scoped to whichever LIVE project
+    that team actually belongs to. We don't pre-guess a single global
+    "active project" — that breaks if an old/forgotten project elsewhere
+    is still flagged status="live" (e.g. left over from earlier testing
+    under a different account or never explicitly ended). Instead we go
+    straight from the phone number to the matching team + its own live
+    project, so stray live projects can never hijack the wrong team's
+    messages. If a number somehow matches teams in more than one live
+    project, the most recently created project wins.
+    """
+    from models.models import Project
     cleaned = mobile.replace("whatsapp:", "").strip()
     return (
         db.query(Team)
+        .join(Project, Team.project_id == Project.id)
         .filter(
-            Team.project_id == project_id,
-            Team.group_number.contains(cleaned)
+            Team.group_number.contains(cleaned),
+            Project.status == "live",
         )
+        .order_by(Project.created_at.desc())
         .first()
     )
 

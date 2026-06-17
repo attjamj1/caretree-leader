@@ -7,7 +7,6 @@ from core.station_router import (
     get_next_station,
     get_or_create_progress,
     get_team_by_number,
-    get_active_project,
 )
 from core import whatsapp as wa
 from models.models import EventLog, Team, Project
@@ -45,13 +44,10 @@ async def handle_incoming(
     Called by the webhook for every incoming WhatsApp message.
     Resolves team → dispatches to correct handler.
     """
-    project = get_active_project(db)
-    if not project:
-        return
-
-    team = get_team_by_number(from_number, project.id, db)
+    team = get_team_by_number(from_number, db)
     if not team:
         return
+    project = team.project
 
     # Handle GPS location submission
     if latitude and longitude:
