@@ -18,12 +18,24 @@ def get_client() -> Client:
 
 
 BOT_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER", "whatsapp:+14155238886")
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "https://caretree-leader.onrender.com")
 
 
 def _to_wa(number: str) -> str:
     if not number.startswith("whatsapp:"):
         return f"whatsapp:{number}"
     return number
+
+
+def _to_absolute_url(url: str) -> str:
+    """Twilio needs a fully-qualified, publicly reachable URL for media.
+    Uploaded clue images are stored as relative paths (e.g. /static/uploads/x.png) —
+    prefix those with the deployed base URL before handing them to Twilio."""
+    if not url:
+        return url
+    if url.startswith("http://") or url.startswith("https://"):
+        return url
+    return f"{PUBLIC_BASE_URL.rstrip('/')}/{url.lstrip('/')}"
 
 
 async def send_text(to: str, body: str):
@@ -38,7 +50,7 @@ async def send_image(to: str, image_url: str, caption: str = ""):
     get_client().messages.create(
         to=_to_wa(to),
         from_=BOT_NUMBER,
-        media_url=[image_url],
+        media_url=[_to_absolute_url(image_url)],
         body=caption,
     )
 
@@ -57,7 +69,7 @@ async def send_video(to: str, video_url: str, caption: str = ""):
     get_client().messages.create(
         to=_to_wa(to),
         from_=BOT_NUMBER,
-        media_url=[video_url],
+        media_url=[_to_absolute_url(video_url)],
         body=caption,
     )
 
