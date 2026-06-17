@@ -169,12 +169,20 @@ async def start_race(project_id: str, db: Session = Depends(get_db), user: str =
     if not p.teams:
         raise HTTPException(400, "Add teams before starting")
 
+    # Wipe any leftover progress from a previous run of this project (e.g. earlier
+    # testing) so stale flags like awaiting_chain can never carry over into a fresh
+    # start — "Start race" should always mean a clean slate for every team.
+    team_ids = [t.id for t in p.teams]
+    if team_ids:
+        db.query(Progress).filter(Progress.team_id.in_(team_ids)).delete(synchronize_session=False)
+
     assign_routes(p, db)
 
     p.status = "live"
     for team in p.teams:
         team.status = "racing"
         team.start_time = datetime.now(timezone.utc)
+        team.end_time = None
     db.commit()
 
     for team in p.teams:
