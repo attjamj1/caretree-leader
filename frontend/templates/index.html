@@ -199,6 +199,14 @@
       <label class="form-label">Hint text</label>
       <input type="text" id="s-hint" placeholder="Shown when team types /hint">
     </div>
+    <div class="form-group">
+      <label class="form-label">Hint photo <span style="font-size:10px;color:var(--tan-dark)">(optional — bot sends this image along with the hint text)</span></label>
+      <div class="img-drop-zone" id="drop-s-hint-media" ondragover="event.preventDefault()" ondrop="handleImgDrop(event,'s-hint-media','drop-s-hint-media')">
+        <span class="img-drop-label">Drop image here or <label style="color:var(--red);cursor:pointer">browse<input type="file" accept="image/*" style="display:none" onchange="handleImgFile(this,'s-hint-media','drop-s-hint-media')"></label></span>
+        <img id="prev-s-hint-media" style="display:none;max-height:80px;border-radius:4px;margin-top:6px">
+      </div>
+      <input type="text" id="s-hint-media" placeholder="or paste a URL" style="margin-top:6px" oninput="updateImgPreview('s-hint-media','prev-s-hint-media')">
+    </div>
     <div class="grid2">
       <div class="form-group">
         <label class="form-label">Hint cost (pts)</label>

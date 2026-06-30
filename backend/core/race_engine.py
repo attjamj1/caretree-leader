@@ -268,12 +268,19 @@ async def _handle_hint(team: Team, project: Project, db: Session):
          f"Hint used at Station {station.station_code}",
          -station.hint_cost, 0, db)
 
-    await wa.send_text(
-        team.group_number,
+    hint_body = (
         f"💡 *Hint for Station {station.station_code}*\n"
         f"(-{station.hint_cost} pts deducted)\n\n"
         f"{station.hint_text}"
     )
+    if station.hint_media_url:
+        try:
+            await wa.send_image(team.group_number, station.hint_media_url, hint_body)
+        except Exception as e:
+            print(f"[hint image send failed, falling back to text] {e}")
+            await wa.send_text(team.group_number, hint_body)
+    else:
+        await wa.send_text(team.group_number, hint_body)
 
 
 # ─── Reveal answer ────────────────────────────────────────────────────────────

@@ -95,6 +95,7 @@ class StationCreate(BaseModel):
     gps_lng: Optional[float] = None
     answer: str
     hint_text: str = ""
+    hint_media_url: str = ""
     hint_cost: int = 5
     answer_cost: int = 20
     photo_required: bool = False
@@ -430,6 +431,7 @@ def _station_dict(s: Station):
         "gps_lng": s.gps_lng,
         "answer": s.answer,
         "hint_text": s.hint_text,
+        "hint_media_url": s.hint_media_url or "",
         "hint_cost": s.hint_cost,
         "answer_cost": s.answer_cost,
         "photo_required": s.photo_required,

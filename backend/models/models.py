@@ -104,6 +104,7 @@ class Station(Base):
     gps_lng        = Column(Float, nullable=True)
     answer         = Column(String, nullable=False)
     hint_text      = Column(Text, default="")
+    hint_media_url = Column(String, default="")
     hint_cost      = Column(Integer, default=5)
     answer_cost    = Column(Integer, default=20)
     photo_required = Column(Boolean, default=False)

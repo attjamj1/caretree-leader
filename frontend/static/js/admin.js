@@ -928,7 +928,7 @@ function openAddStation() {
   editingStationIdx = null;
   document.getElementById('station-modal-title').textContent = 'Add station';
   document.getElementById('delete-station-btn').style.display = 'none';
-  ['s-code','s-name','s-clue','s-answer','s-hint','s-media','s-chain-clue','s-chain-media','s-chain-hint'].forEach(id => {
+  ['s-code','s-name','s-clue','s-answer','s-hint','s-media','s-hint-media','s-chain-clue','s-chain-media','s-chain-hint'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -938,11 +938,11 @@ function openAddStation() {
   document.getElementById('s-photo').checked = false;
   document.getElementById('s-chain-photo').checked = true;
   document.getElementById('s-final').checked = false;
-  ['drop-s-media','drop-s-chain-media'].forEach(id => {
+  ['drop-s-media','drop-s-hint-media','drop-s-chain-media'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('has-img','drag-over');
   });
-  ['prev-s-media','prev-s-chain-media'].forEach(id => {
+  ['prev-s-media','prev-s-hint-media','prev-s-chain-media'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.src=''; el.style.display='none'; }
   });
@@ -962,6 +962,7 @@ function openEditStation(id, idx) {
   document.getElementById('s-clue').value = s.clue_text;
   document.getElementById('s-answer').value = s.answer;
   document.getElementById('s-hint').value = s.hint_text;
+  document.getElementById('s-hint-media').value = s.hint_media_url || '';
   document.getElementById('s-hint-cost').value = s.hint_cost;
   document.getElementById('s-answer-cost').value = s.answer_cost;
   document.getElementById('s-photo').checked = s.photo_required;
@@ -976,8 +977,9 @@ function openEditStation(id, idx) {
   document.getElementById('s-final').checked = s.is_final === true;
   // Show existing image previews
   updateImgPreview('s-media', 'prev-s-media');
+  updateImgPreview('s-hint-media', 'prev-s-hint-media');
   updateImgPreview('s-chain-media', 'prev-s-chain-media');
-  ['drop-s-media','drop-s-chain-media'].forEach(id => {
+  ['drop-s-media','drop-s-hint-media','drop-s-chain-media'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('has-img', !!document.getElementById(id.replace('drop-',''))?.value);
   });
@@ -1025,6 +1027,7 @@ async function saveStation() {
     clue_media_url: document.getElementById('s-media').value.trim(),
     answer: document.getElementById('s-answer').value.trim(),
     hint_text: document.getElementById('s-hint').value.trim(),
+    hint_media_url: document.getElementById('s-hint-media').value.trim(),
     hint_cost: parseInt(document.getElementById('s-hint-cost').value) || 5,
     answer_cost: parseInt(document.getElementById('s-answer-cost').value) || 20,
     photo_required: document.getElementById('s-photo').checked,
