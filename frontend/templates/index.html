@@ -242,6 +242,14 @@
         <label class="form-label">Chain hint <span style="font-size:10px;color:var(--tan-dark)">(shown when team types /hint in phase 2)</span></label>
         <input type="text" id="s-chain-hint" placeholder="e.g. 2 numbers">
       </div>
+      <div class="form-group">
+        <label class="form-label">Chain hint photo <span style="font-size:10px;color:var(--tan-dark)">(optional — bot sends this image with the chain hint)</span></label>
+        <div class="img-drop-zone" id="drop-s-chain-hint-media" ondragover="event.preventDefault()" ondrop="handleImgDrop(event,'s-chain-hint-media','drop-s-chain-hint-media')">
+          <span class="img-drop-label">Drop image here or <label style="color:var(--red);cursor:pointer">browse<input type="file" accept="image/*" style="display:none" onchange="handleImgFile(this,'s-chain-hint-media','drop-s-chain-hint-media')"></label></span>
+          <img id="prev-s-chain-hint-media" style="display:none;max-height:80px;border-radius:4px;margin-top:6px">
+        </div>
+        <input type="text" id="s-chain-hint-media" placeholder="or paste a URL" style="margin-top:6px" oninput="updateImgPreview('s-chain-hint-media','prev-s-chain-hint-media')">
+      </div>
       <div class="check-row">
         <input type="checkbox" id="s-chain-photo" checked>
         <label for="s-chain-photo">Require selfie to complete phase 2</label>

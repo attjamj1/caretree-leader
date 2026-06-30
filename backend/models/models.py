@@ -113,6 +113,7 @@ class Station(Base):
     chain_clue           = Column(Text, default="")          # clue shown after correct answer
     chain_media_url      = Column(String, default="")        # optional photo sent with chain clue
     chain_hint           = Column(Text, default="")          # hint for phase 2
+    chain_hint_media_url = Column(String, default="")        # optional photo sent with chain hint
     chain_photo_required = Column(Boolean, default=False)    # selfie required to complete
 
     # ── Routing ──────────────────────────────────────────────────────────────
