@@ -150,13 +150,61 @@ async def _handle_answer(team: Team, project: Project, body: str, db: Session):
 
     prog = get_or_create_progress(team, station, db)
 
-    # If team is in phase 2 of a chain station, text answers aren't accepted
+    # If team is in phase 2 of a chain station
     if prog.awaiting_chain:
-        await wa.send_text(
-            team.group_number,
-            "📸 *You're on the second part of this mission!*\n"
-            "Send your photo to complete this station."
-        )
+        if not station.chain_answer:
+            # No text answer configured — selfie is the only way to complete phase 2
+            await wa.send_text(
+                team.group_number,
+                "📸 *You're on the second part of this mission!*\n"
+                "Send your photo to complete this station."
+            )
+            return
+
+        if station.chain_photo_required and not prog.photo_submitted:
+            await wa.send_text(
+                team.group_number,
+                "📸 Please send your photo for this part before answering!"
+            )
+            return
+
+        if check_answer(body, station.chain_answer):
+            prog.completed = True
+            prog.completed_at = datetime.now(timezone.utc)
+            prog.awaiting_chain = False
+            db.commit()
+
+            _log(team, project, "correct", station.station_code,
+                 f"Phase 2 complete at Station {station.station_code}", 0, 0, db)
+
+            next_station = get_next_station(team, db)
+            if next_station:
+                await wa.send_text(
+                    team.group_number,
+                    f"✅ *Correct!* Station {station.station_code} cleared!\n"
+                    f"Stages done: {team.stages_done} / {len(project.stations)}\n\n"
+                    f"Here comes your next mission 👇"
+                )
+                await wa.send_station(team.group_number, next_station, project)
+            else:
+                await _finish_team(team, project, db)
+        else:
+            prog.wrong_answers += 1
+            db.commit()
+
+            penalty_time = project.scoring_wrong_time
+            penalty_pts = project.scoring_wrong_pts
+            _log(team, project, "wrong", station.station_code,
+                 f"Wrong phase 2 answer at Station {station.station_code}",
+                 -penalty_pts, penalty_time, db)
+
+            await wa.send_text(
+                team.group_number,
+                f"❌ *Wrong answer!*\n"
+                f"-{penalty_pts} pts · +{penalty_time} min penalty added\n"
+                f"Total wrong: {team.wrong_count}\n\n"
+                f"Try again, or type */hint* (-{station.hint_cost} pts)"
+            )
         return
 
     if station.photo_required and not prog.photo_submitted:
@@ -176,8 +224,15 @@ async def _handle_answer(team: Team, project: Project, body: str, db: Session):
             _log(team, project, "correct", station.station_code,
                  f"Phase 1 complete at Station {station.station_code}", 0, 0, db)
             hint_note = f"\n\nType */hint* for a clue (-{station.hint_cost} pts)" if station.chain_hint else ""
-            photo_note = "\n\n📸 *Send your photo to complete this station.*" if station.chain_photo_required else ""
-            body = f"✅ *Correct!*\n\n{station.chain_clue}{hint_note}{photo_note}"
+            if station.chain_photo_required and station.chain_answer:
+                next_note = "\n\n📸 *Send your photo, then type your answer to complete this station.*"
+            elif station.chain_photo_required:
+                next_note = "\n\n📸 *Send your photo to complete this station.*"
+            elif station.chain_answer:
+                next_note = "\n\n💬 *Type your answer to complete this station.*"
+            else:
+                next_note = ""
+            body = f"✅ *Correct!*\n\n{station.chain_clue}{hint_note}{next_note}"
             if station.chain_media_url:
                 try:
                     await wa.send_image(team.group_number, station.chain_media_url, body)
@@ -330,13 +385,25 @@ async def _handle_photo(team: Team, project: Project, media_url: str, db: Sessio
 
     prog = get_or_create_progress(team, station, db)
 
-    # ── Chain phase 2: selfie completes the station ───────────────────────────
+    # ── Chain phase 2: selfie (and possibly a text answer) completes the station ──
     if prog.awaiting_chain and station.chain_photo_required:
+        prog.photo_submitted = True
+        prog.photo_url = media_url
+
+        if station.chain_answer:
+            # A text answer is also required — selfie alone doesn't finish the station
+            db.commit()
+            _log(team, project, "photo", station.station_code,
+                 f"Chain selfie received at Station {station.station_code}", 0, 0, db)
+            await wa.send_text(
+                team.group_number,
+                "📸 *Selfie received!* Now type your answer to complete this station."
+            )
+            return
+
         prog.completed = True
         prog.completed_at = datetime.now(timezone.utc)
         prog.awaiting_chain = False
-        prog.photo_submitted = True
-        prog.photo_url = media_url
         db.commit()
 
         _log(team, project, "correct", station.station_code,

@@ -928,7 +928,7 @@ function openAddStation() {
   editingStationIdx = null;
   document.getElementById('station-modal-title').textContent = 'Add station';
   document.getElementById('delete-station-btn').style.display = 'none';
-  ['s-code','s-name','s-clue','s-answer','s-hint','s-media','s-hint-media','s-chain-clue','s-chain-media','s-chain-hint','s-chain-hint-media'].forEach(id => {
+  ['s-code','s-name','s-clue','s-answer','s-hint','s-media','s-hint-media','s-chain-clue','s-chain-media','s-chain-answer','s-chain-hint','s-chain-hint-media'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -972,6 +972,7 @@ function openEditStation(id, idx) {
   // Chain fields
   document.getElementById('s-chain-clue').value = s.chain_clue || '';
   document.getElementById('s-chain-media').value = s.chain_media_url || '';
+  document.getElementById('s-chain-answer').value = s.chain_answer || '';
   document.getElementById('s-chain-hint').value = s.chain_hint || '';
   document.getElementById('s-chain-hint-media').value = s.chain_hint_media_url || '';
   document.getElementById('s-chain-photo').checked = s.chain_photo_required !== false;
@@ -1041,6 +1042,7 @@ async function saveStation() {
   // Chain mission fields — enabled if chain_clue is filled in
   data.chain_clue           = document.getElementById('s-chain-clue').value.trim();
   data.chain_media_url      = document.getElementById('s-chain-media').value.trim();
+  data.chain_answer         = document.getElementById('s-chain-answer').value.trim();
   data.chain_hint           = document.getElementById('s-chain-hint').value.trim();
   data.chain_hint_media_url = document.getElementById('s-chain-hint-media').value.trim();
   data.chain_photo_required = data.chain_clue ? document.getElementById('s-chain-photo').checked : false;

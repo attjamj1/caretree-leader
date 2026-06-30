@@ -225,7 +225,7 @@
     <!-- ── Chain mission ──────────────────────────────────────────────────── -->
     <div style="border-top:1px dashed var(--tan);margin-top:14px;padding-top:12px;">
       <div style="font-family:var(--font-hand);font-size:15px;color:var(--dark-mid);margin-bottom:4px;">🔗 Chain mission <span style="font-size:11px;font-family:var(--font-body);color:var(--tan-dark)">(optional — leave blank to disable)</span></div>
-      <div style="font-size:11px;color:var(--tan-dark);margin-bottom:10px;">After answering correctly, send this clue and wait for a selfie before advancing.</div>
+      <div style="font-size:11px;color:var(--tan-dark);margin-bottom:10px;">After answering correctly, send this clue and wait for a selfie and/or a typed answer (whichever you set below) before advancing.</div>
       <div class="form-group">
         <label class="form-label">Chain clue</label>
         <textarea id="s-chain-clue" placeholder="e.g. Find the nearest 7-Eleven and take a group selfie with the storefront! 📸" style="min-height:56px"></textarea>
@@ -237,6 +237,10 @@
           <img id="prev-s-chain-media" style="display:none;max-height:80px;border-radius:4px;margin-top:6px">
         </div>
         <input type="text" id="s-chain-media" placeholder="or paste a URL" style="margin-top:6px" oninput="updateImgPreview('s-chain-media','prev-s-chain-media')">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chain answer <span style="font-size:10px;color:var(--tan-dark)">(optional — leave blank to skip text-answer checking for phase 2)</span></label>
+        <input type="text" id="s-chain-answer" placeholder="Case-insensitive match">
       </div>
       <div class="form-group">
         <label class="form-label">Chain hint <span style="font-size:10px;color:var(--tan-dark)">(shown when team types /hint in phase 2)</span></label>

@@ -101,6 +101,7 @@ class StationCreate(BaseModel):
     photo_required: bool = False
     chain_clue: str = ""
     chain_media_url: str = ""
+    chain_answer: str = ""
     chain_hint: str = ""
     chain_hint_media_url: str = ""
     chain_photo_required: bool = False
@@ -438,6 +439,7 @@ def _station_dict(s: Station):
         "photo_required": s.photo_required,
         "chain_clue": s.chain_clue or "",
         "chain_media_url": s.chain_media_url or "",
+        "chain_answer": s.chain_answer or "",
         "chain_hint": s.chain_hint or "",
         "chain_hint_media_url": s.chain_hint_media_url or "",
         "chain_photo_required": s.chain_photo_required or False,
