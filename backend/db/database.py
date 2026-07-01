@@ -54,6 +54,7 @@ def _safe_migrate():
         ("stations",  "hint_media_url",       "VARCHAR DEFAULT ''"),
         ("stations",  "chain_hint_media_url", "VARCHAR DEFAULT ''"),
         ("stations",  "chain_answer",         "VARCHAR DEFAULT ''"),
+        ("progress",  "chain_step_index",     "INTEGER DEFAULT 0"),
     ]
     with engine.connect() as conn:
         for table, col, typ in migrations:

@@ -6,7 +6,7 @@ import os, uuid, shutil
 from datetime import datetime, timezone
 
 from db.database import get_db
-from models.models import Project, Team, Station, Progress, EventLog
+from models.models import Project, Team, Station, Progress, EventLog, ChainStep
 from core.station_router import assign_routes
 from core import whatsapp as wa
 from api.auth import verify_token
@@ -84,6 +84,14 @@ class TeamCreate(BaseModel):
     group_number: str = ""
     member_numbers: list = []
 
+class ChainStepCreate(BaseModel):
+    clue_text: str = ""
+    clue_media_url: str = ""
+    answer: str = ""
+    hint_text: str = ""
+    hint_media_url: str = ""
+    photo_required: bool = False
+
 class StationCreate(BaseModel):
     station_code: str
     name: str
@@ -106,6 +114,7 @@ class StationCreate(BaseModel):
     chain_hint_media_url: str = ""
     chain_photo_required: bool = False
     is_final: bool = False
+    chain_steps: list = []
 
 class BroadcastMsg(BaseModel):
     message: str
@@ -269,12 +278,20 @@ def list_stations(project_id: str, db: Session = Depends(get_db), user: str = De
 def create_station(project_id: str, data: StationCreate, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
     _get_or_404_owned(db, project_id, user)
     data_dict = data.dict()
+    chain_steps_data = data_dict.pop('chain_steps', [])
     data_dict['answer'] = data.answer.upper().strip()
-    s = Station(
-        project_id=project_id,
-        **data_dict
-    )
+    s = Station(project_id=project_id, **data_dict)
     db.add(s)
+    db.flush()
+    for i, step in enumerate(chain_steps_data):
+        cs = ChainStep(station_id=s.id, order_index=i,
+                       clue_text=step.get('clue_text',''),
+                       clue_media_url=step.get('clue_media_url',''),
+                       answer=step.get('answer','').upper().strip(),
+                       hint_text=step.get('hint_text',''),
+                       hint_media_url=step.get('hint_media_url',''),
+                       photo_required=step.get('photo_required', False))
+        db.add(cs)
     db.commit()
     db.refresh(s)
     return _station_dict(s)
@@ -283,9 +300,22 @@ def create_station(project_id: str, data: StationCreate, db: Session = Depends(g
 @router.patch("/projects/{project_id}/stations/{station_id}")
 def update_station(project_id: str, station_id: str, data: StationCreate, db: Session = Depends(get_db), user: str = Depends(require_api_key)):
     s = _get_or_404(db, Station, station_id)
-    for field, value in data.dict().items():
+    data_dict = data.dict()
+    chain_steps_data = data_dict.pop('chain_steps', [])
+    for field, value in data_dict.items():
         setattr(s, field, value)
     s.answer = s.answer.upper().strip()
+    # Replace chain steps
+    db.query(ChainStep).filter_by(station_id=s.id).delete()
+    for i, step in enumerate(chain_steps_data):
+        cs = ChainStep(station_id=s.id, order_index=i,
+                       clue_text=step.get('clue_text',''),
+                       clue_media_url=step.get('clue_media_url',''),
+                       answer=step.get('answer','').upper().strip(),
+                       hint_text=step.get('hint_text',''),
+                       hint_media_url=step.get('hint_media_url',''),
+                       photo_required=step.get('photo_required', False))
+        db.add(cs)
     db.commit()
     return _station_dict(s)
 
@@ -444,4 +474,15 @@ def _station_dict(s: Station):
         "chain_hint_media_url": s.chain_hint_media_url or "",
         "chain_photo_required": s.chain_photo_required or False,
         "is_final": s.is_final or False,
+        "chain_steps": [
+            {
+                "clue_text": cs.clue_text or "",
+                "clue_media_url": cs.clue_media_url or "",
+                "answer": cs.answer or "",
+                "hint_text": cs.hint_text or "",
+                "hint_media_url": cs.hint_media_url or "",
+                "photo_required": cs.photo_required or False,
+            }
+            for cs in (s.chain_steps or [])
+        ],
     }

@@ -120,8 +120,10 @@ class Station(Base):
     # ── Routing ──────────────────────────────────────────────────────────────
     is_final = Column(Boolean, default=False)  # always appended last in every team's route
 
-    project  = relationship("Project", back_populates="stations")
-    progress = relationship("Progress", back_populates="station", cascade="all, delete")
+    project     = relationship("Project", back_populates="stations")
+    progress    = relationship("Progress", back_populates="station", cascade="all, delete")
+    chain_steps = relationship("ChainStep", back_populates="station", cascade="all, delete",
+                               order_by="ChainStep.order_index")
 
 
 # ─── Progress ────────────────────────────────────────────────────────────────
@@ -139,10 +141,30 @@ class Progress(Base):
     answer_revealed = Column(Boolean, default=False)
     photo_submitted = Column(Boolean, default=False)
     photo_url       = Column(String, default="")
-    awaiting_chain  = Column(Boolean, default=False)  # team is in phase 2 of a chain station
+    awaiting_chain   = Column(Boolean, default=False)  # team is in a chain mission
+    chain_step_index = Column(Integer, default=0)       # which chain step (0-based)
 
     team    = relationship("Team",    back_populates="progress")
     station = relationship("Station", back_populates="progress")
+
+
+# ─── Chain Step ──────────────────────────────────────────────────────────────
+
+class ChainStep(Base):
+    """One step in a multi-part chain mission. A station can have 1–N of these."""
+    __tablename__ = "chain_steps"
+
+    id             = Column(String, primary_key=True, default=gen_id)
+    station_id     = Column(String, ForeignKey("stations.id"), nullable=False)
+    order_index    = Column(Integer, default=0)
+    clue_text      = Column(Text, default="")
+    clue_media_url = Column(String, default="")
+    answer         = Column(String, default="")      # empty = no text answer required
+    hint_text      = Column(Text, default="")
+    hint_media_url = Column(String, default="")
+    photo_required = Column(Boolean, default=False)
+
+    station = relationship("Station", back_populates="chain_steps")
 
 
 # ─── Event Log ───────────────────────────────────────────────────────────────

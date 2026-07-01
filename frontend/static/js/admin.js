@@ -921,6 +921,109 @@ function updateImgPreview(inputId, prevId) {
   else img.style.display = 'none';
 }
 
+// ─── Chain Steps UI ────────────────────────────────────────────────────────
+
+function renderChainStep(n, data = {}) {
+  const id = `cs${n}`;
+  const d = Object.assign({ clue_text:'', clue_media_url:'', answer:'', hint_text:'', hint_media_url:'', photo_required:false }, data);
+  const div = document.createElement('div');
+  div.className = 'chain-step-card';
+  div.dataset.stepIdx = n;
+  div.style.cssText = 'border:1px solid var(--tan);border-radius:8px;padding:12px;margin-bottom:10px;background:var(--bg-light,#fdf8f0)';
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-weight:600;font-size:13px;color:var(--dark-mid)">Part ${n + 1}</span>
+      <button type="button" onclick="removeChainStep(this)" style="border:none;background:none;color:var(--red);cursor:pointer;font-size:16px;line-height:1">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Clue / instruction</label>
+      <textarea id="${id}-clue" style="min-height:48px" placeholder="What teams need to do for this part...">${escHtml(d.clue_text)}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Photo clue <span style="font-size:10px;color:var(--tan-dark)">(optional)</span></label>
+      <div class="img-drop-zone" id="drop-${id}-media" ondragover="event.preventDefault()" ondrop="handleImgDrop(event,'${id}-media','drop-${id}-media')">
+        <span class="img-drop-label">Drop image here or <label style="color:var(--red);cursor:pointer">browse<input type="file" accept="image/*" style="display:none" onchange="handleImgFile(this,'${id}-media','drop-${id}-media')"></label></span>
+        <img id="prev-${id}-media" style="display:none;max-height:70px;border-radius:4px;margin-top:6px">
+      </div>
+      <input type="text" id="${id}-media" placeholder="or paste a URL" style="margin-top:6px" value="${escHtml(d.clue_media_url)}" oninput="updateImgPreview('${id}-media','prev-${id}-media')">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Answer <span style="font-size:10px;color:var(--tan-dark)">(optional — leave blank to skip answer-checking for this part)</span></label>
+      <input type="text" id="${id}-answer" placeholder="Case-insensitive match" value="${escHtml(d.answer)}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hint text <span style="font-size:10px;color:var(--tan-dark)">(optional)</span></label>
+      <input type="text" id="${id}-hint" placeholder="Shown when team types /hint" value="${escHtml(d.hint_text)}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hint photo <span style="font-size:10px;color:var(--tan-dark)">(optional)</span></label>
+      <div class="img-drop-zone" id="drop-${id}-hint-media" ondragover="event.preventDefault()" ondrop="handleImgDrop(event,'${id}-hint-media','drop-${id}-hint-media')">
+        <span class="img-drop-label">Drop image here or <label style="color:var(--red);cursor:pointer">browse<input type="file" accept="image/*" style="display:none" onchange="handleImgFile(this,'${id}-hint-media','drop-${id}-hint-media')"></label></span>
+        <img id="prev-${id}-hint-media" style="display:none;max-height:70px;border-radius:4px;margin-top:6px">
+      </div>
+      <input type="text" id="${id}-hint-media" placeholder="or paste a URL" style="margin-top:6px" value="${escHtml(d.hint_media_url)}" oninput="updateImgPreview('${id}-hint-media','prev-${id}-hint-media')">
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="${id}-photo" ${d.photo_required ? 'checked' : ''}>
+      <label for="${id}-photo">Require selfie to complete this part</label>
+    </div>`;
+  // refresh previews after insert
+  setTimeout(() => {
+    updateImgPreview(`${id}-media`, `prev-${id}-media`);
+    updateImgPreview(`${id}-hint-media`, `prev-${id}-hint-media`);
+  }, 0);
+  return div;
+}
+
+function escHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function addChainStep() {
+  const list = document.getElementById('chain-steps-list');
+  const n = list.children.length;
+  list.appendChild(renderChainStep(n));
+  renumberChainSteps();
+}
+
+function removeChainStep(btn) {
+  btn.closest('.chain-step-card').remove();
+  renumberChainSteps();
+}
+
+function renumberChainSteps() {
+  const cards = document.querySelectorAll('#chain-steps-list .chain-step-card');
+  cards.forEach((card, i) => {
+    card.dataset.stepIdx = i;
+    card.querySelector('span').textContent = `Part ${i + 1}`;
+  });
+}
+
+function getChainSteps() {
+  return Array.from(document.querySelectorAll('#chain-steps-list .chain-step-card')).map(card => {
+    const n = card.dataset.stepIdx;
+    const id = `cs${n}`;
+    return {
+      clue_text:      (document.getElementById(`${id}-clue`)?.value || '').trim(),
+      clue_media_url: (document.getElementById(`${id}-media`)?.value || '').trim(),
+      answer:         (document.getElementById(`${id}-answer`)?.value || '').trim(),
+      hint_text:      (document.getElementById(`${id}-hint`)?.value || '').trim(),
+      hint_media_url: (document.getElementById(`${id}-hint-media`)?.value || '').trim(),
+      photo_required: document.getElementById(`${id}-photo`)?.checked || false,
+    };
+  });
+}
+
+function clearChainSteps() {
+  document.getElementById('chain-steps-list').innerHTML = '';
+}
+
+function loadChainSteps(steps) {
+  const list = document.getElementById('chain-steps-list');
+  list.innerHTML = '';
+  steps.forEach((step, i) => list.appendChild(renderChainStep(i, step)));
+}
+
 // ─── Station CRUD ──────────────────────────────────────────────────────────
 
 function openAddStation() {
@@ -928,7 +1031,7 @@ function openAddStation() {
   editingStationIdx = null;
   document.getElementById('station-modal-title').textContent = 'Add station';
   document.getElementById('delete-station-btn').style.display = 'none';
-  ['s-code','s-name','s-clue','s-answer','s-hint','s-media','s-hint-media','s-chain-clue','s-chain-media','s-chain-answer','s-chain-hint','s-chain-hint-media'].forEach(id => {
+  ['s-code','s-name','s-clue','s-answer','s-hint','s-media','s-hint-media'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -936,16 +1039,16 @@ function openAddStation() {
   document.getElementById('s-hint-cost').value = 5;
   document.getElementById('s-answer-cost').value = 20;
   document.getElementById('s-photo').checked = false;
-  document.getElementById('s-chain-photo').checked = true;
   document.getElementById('s-final').checked = false;
-  ['drop-s-media','drop-s-hint-media','drop-s-chain-media','drop-s-chain-hint-media'].forEach(id => {
+  ['drop-s-media','drop-s-hint-media'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('has-img','drag-over');
   });
-  ['prev-s-media','prev-s-hint-media','prev-s-chain-media','prev-s-chain-hint-media'].forEach(id => {
+  ['prev-s-media','prev-s-hint-media'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.src=''; el.style.display='none'; }
   });
+  clearChainSteps();
   updateTypeHint();
   openModal('modal-station');
 }
@@ -969,20 +1072,19 @@ function openEditStation(id, idx) {
   if (s.clue_media_url) document.getElementById('s-media').value = s.clue_media_url;
   if (s.gps_lat) document.getElementById('s-lat').value = s.gps_lat;
   if (s.gps_lng) document.getElementById('s-lng').value = s.gps_lng;
-  // Chain fields
-  document.getElementById('s-chain-clue').value = s.chain_clue || '';
-  document.getElementById('s-chain-media').value = s.chain_media_url || '';
-  document.getElementById('s-chain-answer').value = s.chain_answer || '';
-  document.getElementById('s-chain-hint').value = s.chain_hint || '';
-  document.getElementById('s-chain-hint-media').value = s.chain_hint_media_url || '';
-  document.getElementById('s-chain-photo').checked = s.chain_photo_required !== false;
   document.getElementById('s-final').checked = s.is_final === true;
+  // Load chain steps — migrate legacy single-step data if chain_steps array is empty
+  const steps = (s.chain_steps && s.chain_steps.length > 0) ? s.chain_steps
+    : (s.chain_clue ? [{
+        clue_text: s.chain_clue, clue_media_url: s.chain_media_url || '',
+        answer: s.chain_answer || '', hint_text: s.chain_hint || '',
+        hint_media_url: s.chain_hint_media_url || '', photo_required: !!s.chain_photo_required
+      }] : []);
+  loadChainSteps(steps);
   // Show existing image previews
   updateImgPreview('s-media', 'prev-s-media');
   updateImgPreview('s-hint-media', 'prev-s-hint-media');
-  updateImgPreview('s-chain-media', 'prev-s-chain-media');
-  updateImgPreview('s-chain-hint-media', 'prev-s-chain-hint-media');
-  ['drop-s-media','drop-s-hint-media','drop-s-chain-media','drop-s-chain-hint-media'].forEach(id => {
+  ['drop-s-media','drop-s-hint-media'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('has-img', !!document.getElementById(id.replace('drop-',''))?.value);
   });
@@ -1040,12 +1142,7 @@ async function saveStation() {
   };
 
   // Chain mission fields — enabled if chain_clue is filled in
-  data.chain_clue           = document.getElementById('s-chain-clue').value.trim();
-  data.chain_media_url      = document.getElementById('s-chain-media').value.trim();
-  data.chain_answer         = document.getElementById('s-chain-answer').value.trim();
-  data.chain_hint           = document.getElementById('s-chain-hint').value.trim();
-  data.chain_hint_media_url = document.getElementById('s-chain-hint-media').value.trim();
-  data.chain_photo_required = data.chain_clue ? document.getElementById('s-chain-photo').checked : false;
+  data.chain_steps = getChainSteps();
   data.is_final             = document.getElementById('s-final').checked;
 
   if (data.mission_type === 'gps') data.answer = '__gps__';
