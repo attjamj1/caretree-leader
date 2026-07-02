@@ -534,7 +534,7 @@ tbody tr:hover td { background: var(--cream-dark); }
   font-size: 12px;
   color: var(--tan-dark);
   border-top: 1px solid var(--cream-dark);
-  margin-top: 32px;
+  margin-top: auto;
 }
 
 /* ─── Log rows ────────────────────────────────────────────────────────────── */
